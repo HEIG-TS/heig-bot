@@ -30,69 +30,69 @@ def cmdset(update, context):
         data = load(update)
         data[context.args[0]] = context.args[1]
         save(update, data)
-        context.bot.send_message(chat_id=update.effective_chat.id, text=context.args[0]+"="+context.args[1])
+        send_message(context, update.effective_chat.id, context.args[0]+"="+context.args[1])
 def cmdget(update, context):
     if(len(context.args) == 1):
         data = load(update)
-        context.bot.send_message(chat_id=update.effective_chat.id, text=data[context.args[0]])
+        send_message(context, update.effective_chat.id, data[context.args[0]])
 
 def cmdadminset(update, context):
     if(isadmin_u(update)):
         if(len(context.args) == 2 and not isinstance(config[context.args[0]], list)):
             config[context.args[0]] = context.args[1]
             saveconfig(config)
-            context.bot.send_message(chat_id=update.effective_chat.id, text="Ok")
+            send_message(context, update.effective_chat.id, "Ok")
         else:
-            context.bot.send_message(chat_id=update.effective_chat.id, text="Error")
+            send_message(context, update.effective_chat.id, "Error")
     else:
-        context.bot.send_message(chat_id=update.effective_chat.id, text="Sorry, you aren't admin")
+        send_message(context, update.effective_chat.id, "Sorry, you aren't admin")
 def cmdadminget(update, context):
     if(isadmin_u(update)):
         if(len(context.args) == 1):
             if(isinstance(config[context.args[0]], list)):
-                context.bot.send_message(chat_id=update.effective_chat.id, text=','.join(config[context.args[0]]))
+                send_message(context, update.effective_chat.id, ','.join(config[context.args[0]]))
             else:
-                context.bot.send_message(chat_id=update.effective_chat.id, text=config[context.args[0]])
+                send_message(context, update.effective_chat.id, config[context.args[0]])
         else:
-            context.bot.send_message(chat_id=update.effective_chat.id, text="Error")
+            send_message(context, update.effective_chat.id, "Error")
     else:
-        context.bot.send_message(chat_id=update.effective_chat.id, text="Sorry, you aren't admin")
+        send_message(context, update.effective_chat.id, "Sorry, you aren't admin")
 def cmdadminadd(update, context):
     if(isadmin_u(update)):
         if(len(context.args) == 2 and isinstance(config[context.args[0]], list)):
             config[context.args[0]].append(context.args[1])
             saveconfig(config)
-            context.bot.send_message(chat_id=update.effective_chat.id, text="Ok")
+            send_message(context, update.effective_chat.id, "Ok")
         else:
-            context.bot.send_message(chat_id=update.effective_chat.id, text="Error")
+            send_message(context, update.effective_chat.id, "Error")
     else:
-        context.bot.send_message(chat_id=update.effective_chat.id, text="Sorry, you aren't admin")
+        send_message(context, update.effective_chat.id, "Sorry, you aren't admin")
 def cmdadmindel(update, context):
     if(isadmin_u(update)):
         if(len(context.args) == 2 and isinstance(config[context.args[0]], list)):
             config[context.args[0]].remove(context.args[1])
             saveconfig(config)
-            context.bot.send_message(chat_id=update.effective_chat.id, text="Ok")
+            send_message(context, update.effective_chat.id, "Ok")
         else:
-            context.bot.send_message(chat_id=update.effective_chat.id, text="Error")
+            send_message(context, update.effective_chat.id, "Error")
     else:
-        context.bot.send_message(chat_id=update.effective_chat.id, text="Sorry, you aren't admin")
+        send_message(context, update.effective_chat.id, "Sorry, you aren't admin")
 def cmdadminkill(update, context):
     if(isadmin_u(update)):
         subprocess.check_output("killall bot.py", shell=True)
-        context.bot.send_message(chat_id=update.effective_chat.id, text="Sorry, fail")
+        send_message(context, update.effective_chat.id, "Sorry, fail")
     else:
-        context.bot.send_message(chat_id=update.effective_chat.id, text="Sorry, you aren't admin")
+        send_message(context, update.effective_chat.id, "Sorry, you aren't admin")
 
 def cmddebug(update, context):
     if(isadmin_u(update)):
-        context.bot.send_message(chat_id=update.effective_chat.id, text=update.effective_chat.id)
-        context.bot.send_message(chat_id=update.effective_chat.id, text=update.effective_user.id)
+        send_message(context, update.effective_chat.id, update.effective_chat.id)
+        send_message(context, update.effective_chat.id, update.effective_user.id)
     else:
-        context.bot.send_message(chat_id=update.effective_chat.id, text="Sorry, you aren't admin")
+        send_message(context, update.effective_chat.id, "Sorry, you aren't admin")
 
 def start(update, context):
-    context.bot.send_message(chat_id=update.effective_chat.id, text="I'm a bot, please talk to me!")
+    send_message(context, update.effective_chat.id, "I'm a bot, please talk to me!")
 
 def cmd(update, context):
     if(isadmin_u(update)):
@@ -100,16 +100,16 @@ def cmd(update, context):
         my_cmd = update.message.text
         print(my_cmd)
         output = subprocess.check_output(my_cmd, shell=True)
-        context.bot.send_message(chat_id=update.effective_chat.id, text=output.decode("utf-8"))
+        send_message(context, update.effective_chat.id, output.decode("utf-8"))
     else:
-        context.bot.send_message(chat_id=update.effective_chat.id, text=str(update.effective_user.id))
+        send_message(context, update.effective_chat.id, str(update.effective_user.id))
 
 def cmdsetgapscredentials(update, context):
     if(len(context.args) == 2):
         asd = setGapsCredentials(update, context.args[0], context.args[1])
-        context.bot.send_message(chat_id=update.effective_chat.id, text=asd)
+        send_message(context, update.effective_chat.id, asd)
     else:
-        context.bot.send_message(chat_id=update.effective_chat.id, text="Use: /setgapscredentials username password")
+        send_message(context, update.effective_chat.id, "Use: /setgapscredentials username password")
 
 def sendMatiere(update, context, notes, matiere, year):
     matvalue = notes[matiere]
@@ -124,7 +124,7 @@ def sendMatiere(update, context, notes, matiere, year):
             if isinstance(note, str): continue
             text += "  «"+note['title']+"»\n"
             text += "    "+note['date']+" ("+note['note']+", cls="+note['moyenne']+", "+note['poids']+"%)\n"
-    context.bot.send_message(chat_id=update.effective_chat.id, text=text)
+    send_message(context, update.effective_chat.id, text)
 
 def cmdgetgapsnotes(update, context):
     if(len(context.args) >= 1):
@@ -135,11 +135,11 @@ def cmdgetgapsnotes(update, context):
             selectedmat = context.args[1:]
         for matiere in selectedmat:
             if not matiere in notes: 
-                context.bot.send_message(chat_id=update.effective_chat.id, text="Pas de "+matiere+" en "+year)
+                send_message(context, update.effective_chat.id, "Pas de "+matiere+" en "+year)
                 continue
             sendMatiere(update, context, notes, matiere, year)
     else:
-        context.bot.send_message(chat_id=update.effective_chat.id, text="Use: /getgapsnotes [<annee> [<cours> ...]]")
+        send_message(context, update.effective_chat.id, "Use: /getgapsnotes [<annee> [<cours> ...]]")
         fullnotes = load_u(update)
         if not "gapsnotes" in fullnotes:
             return
@@ -181,11 +181,11 @@ def cmdhelp(update, context):
         for cmd in d:
             textnew = "\n/" + cmd[0] + " " + cmd[1] + " - " + cmd[2]
             if len(text) + len(textnew) >= telegram.constants.MAX_MESSAGE_LENGTH:
-                context.bot.send_message(chat_id=update.effective_chat.id, text=text)
+                send_message(context, update.effective_chat.id, text)
                 text = textnew
             else:
                 text += textnew
-    context.bot.send_message(chat_id=update.effective_chat.id, text=text)
+    send_message(context, update.effective_chat.id, text)
 
 dispatcher.add_handler(telegram.ext.CommandHandler('start', start))
 dispatcher.add_handler(telegram.ext.MessageHandler(telegram.ext.Filters.text, cmd))
@@ -210,5 +210,6 @@ if(config["debug"] == "on"):
     dispatcher.add_handler(cmddebug_handler)
 
 for id in config["logs_userid"]:
-    updater.bot.send_message(chat_id=id, text="Bot starting")
+    send_message(updater, id, "Bot starting")
+    #updater.bot.send_message(chat_id=id, text="Bot starting")
 updater.start_polling()

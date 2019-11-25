@@ -196,5 +196,15 @@ def getGapsNoteCache_u(update, year):
     return getGapsNoteCache(update.effective_user.id, year)
 
 
-    #--data "rs=getStudentCCs&rsargs=%5B${studentID}%2C${year}%2Cnull%5D&" -u${username}:${password} 2>>./.log)"
+def send_message(context, chatid, message):
+    text = ""
+    for line in message.splitlines():
+        if len(text) + len(line) >= telegram.constants.MAX_MESSAGE_LENGTH:
+            context.bot.send_message(chat_id=chatid, text=text)
+            text = line
+        else:
+            text += line
+    #context.bot.send_message(chat_id=chatid, text=message)
+
+
 
