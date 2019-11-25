@@ -149,6 +149,12 @@ def cmdgetgapsnotes(update, context):
             notes = fullnotes[year]
             for matiere in notes.keys():
                 sendMatiere(update, context, notes, matiere, year)
+def cmdcleargapsnotes(update, context):
+    data = load_u(update)
+    data["gapsnotes"] = {}
+    save_u(update, data)
+    send_message(context, update.effective_chat.id, "Cache de note vidé")
+
 
 def cmdhelp(update, context):
     d = [
@@ -156,6 +162,7 @@ def cmdhelp(update, context):
             ["help", "botcmd", "Affiche la liste de commande au format BotFather"],
             ["getgapsnotes", "[<annee> [<cours> ...]]", "Affiche les notes GAPS"],
             ["setgapscredentials", "<username> <password>", "Définit l'identité GAPS"],
+            ["cleargapsnotes", "", "Supprimme le cache de note"],
         ]
     d_admin_all = [
             ["help", "admin", "Affiche l'aide pour les admins"],
@@ -198,6 +205,7 @@ dispatcher.add_handler(telegram.ext.CommandHandler('admindel', cmdadmindel))
 dispatcher.add_handler(telegram.ext.CommandHandler('adminkill', cmdadminkill))
 dispatcher.add_handler(telegram.ext.CommandHandler('setgapscredentials', cmdsetgapscredentials))
 dispatcher.add_handler(telegram.ext.CommandHandler('getgapsnotes', cmdgetgapsnotes))
+dispatcher.add_handler(telegram.ext.CommandHandler('cleargapsnotes', cmdcleargapsnotes))
 dispatcher.add_handler(telegram.ext.CommandHandler('help', cmdhelp))
 
 # setgapscredentials - Définit les crédentials à utiliser pour se connecter à GAPS
