@@ -203,7 +203,7 @@ def send_message(context, chatid, message):
             context.bot.send_message(chat_id=chatid, text=text)
             text = line
         else:
-            text += line
+            text += "\n" + line
     if not text == "":
         context.bot.send_message(chat_id=chatid, text=text)
 
