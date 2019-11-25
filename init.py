@@ -204,6 +204,9 @@ def send_message(context, chatid, message):
             text = line
         else:
             text += line
+    if not text == "":
+        context.bot.send_message(chat_id=chatid, text=text)
+
     #context.bot.send_message(chat_id=chatid, text=message)
 
 
