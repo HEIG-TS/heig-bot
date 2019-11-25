@@ -110,6 +110,7 @@ def cmdsetgapscredentials(update, context):
         send_message(context, update.effective_chat.id, asd)
     else:
         send_message(context, update.effective_chat.id, "Use: /setgapscredentials username password")
+    context.bot.delete_message(update.effective_chat.id, update.effective_message.message_id)
 
 def sendMatiere(update, context, notes, matiere, year):
     matvalue = notes[matiere]
