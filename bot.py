@@ -23,152 +23,50 @@ import sys
 import subprocess
 import json
 import os.path
+from user import User
 from init import *
 
-def cmdset(update, context):
-    if(len(context.args) == 2):
-        data = load(update)
-        data[context.args[0]] = context.args[1]
-        save(update, data)
-        send_message(context, update.effective_chat.id, context.args[0]+"="+context.args[1])
-def cmdget(update, context):
-    if(len(context.args) == 1):
-        data = load(update)
-        send_message(context, update.effective_chat.id, data[context.args[0]])
-
-def cmdadminset(update, context):
-    if(isadmin_u(update)):
-        if(len(context.args) == 2 and not isinstance(config[context.args[0]], list)):
-            config[context.args[0]] = context.args[1]
-            saveconfig(config)
-            send_message(context, update.effective_chat.id, "Ok")
-        else:
-            send_message(context, update.effective_chat.id, "Error")
-    else:
-        send_message(context, update.effective_chat.id, "Sorry, you aren't admin")
-def cmdadminget(update, context):
-    if(isadmin_u(update)):
-        if(len(context.args) == 1):
-            if(isinstance(config[context.args[0]], list)):
-                send_message(context, update.effective_chat.id, ','.join(config[context.args[0]]))
-            else:
-                send_message(context, update.effective_chat.id, config[context.args[0]])
-        else:
-            send_message(context, update.effective_chat.id, "Error")
-    else:
-        send_message(context, update.effective_chat.id, "Sorry, you aren't admin")
-def cmdadminadd(update, context):
-    if(isadmin_u(update)):
-        if(len(context.args) == 2 and isinstance(config[context.args[0]], list)):
-            config[context.args[0]].append(context.args[1])
-            saveconfig(config)
-            send_message(context, update.effective_chat.id, "Ok")
-        else:
-            send_message(context, update.effective_chat.id, "Error")
-    else:
-        send_message(context, update.effective_chat.id, "Sorry, you aren't admin")
-def cmdadmindel(update, context):
-    if(isadmin_u(update)):
-        if(len(context.args) == 2 and isinstance(config[context.args[0]], list)):
-            config[context.args[0]].remove(context.args[1])
-            saveconfig(config)
-            send_message(context, update.effective_chat.id, "Ok")
-        else:
-            send_message(context, update.effective_chat.id, "Error")
-    else:
-        send_message(context, update.effective_chat.id, "Sorry, you aren't admin")
-def cmdadminkill(update, context):
-    if(isadmin_u(update)):
-        subprocess.check_output("killall bot.py", shell=True)
-        send_message(context, update.effective_chat.id, "Sorry, fail")
-    else:
-        send_message(context, update.effective_chat.id, "Sorry, you aren't admin")
-def cmdadminupdate(update, context):
-    update.message.text = "git pull"
-    cmd(update, context)
-    cmdadminkill(update, context)
-
-def cmddebug(update, context):
-    if(isadmin_u(update)):
-        send_message(context, update.effective_chat.id, update.effective_chat.id)
-        send_message(context, update.effective_chat.id, update.effective_user.id)
-    else:
-        send_message(context, update.effective_chat.id, "Sorry, you aren't admin")
-
-def start(update, context):
-    send_message(context, update.effective_chat.id, "I'm a bot, please talk to me!")
-
-def cmd(update, context):
-    if(isadmin_u(update)):
-        my_cmd = update.message.text
-        print(my_cmd)
-        output = subprocess.check_output(my_cmd, shell=True)
-        send_message(context, update.effective_chat.id, output.decode("utf-8"), "`", "`", update.effective_message.message_id)
-    else:
-        send_message(context, update.effective_chat.id, str(update.effective_user.id))
-
 def cmdsetgapscredentials(update, context):
+    user = User(update.effective_user.id)
     if(len(context.args) == 2):
-        asd = setGapsCredentials(update, context.args[0], context.args[1])
-        send_message(context, update.effective_chat.id, asd)
+        act_result = user.gaps().set_credentials(context.args[0], context.args[1])
+        user.send_message("set GAPS credentials : "+act_result, chat_id=update.effective_chat.id)
     else:
-        send_message(context, update.effective_chat.id, "Use: /setgapscredentials username password")
+        user.send_message("Usage : /setgapscredentials username password", chat_id=update.effective_chat.id)
     context.bot.delete_message(update.effective_chat.id, update.effective_message.message_id)
+    user.send_message("Your message is deleted for security", chat_id=update.effective_chat.id)
 
-def sendMatiere(update, context, notes, matiere, year):
-    matvalue = notes[matiere]
-    text = year + " - "+matiere+" (moy="+matvalue["moyenne"]+")\n"
-    print(matiere)
-    for typ,notelst in matvalue.items():
-        if typ == "moyenne": continue
-        text += " "+typ
-        text += " (moy="+notelst['moyenne']+", "+notelst['poids']+"%)\n";
-        for notek in notelst.keys():
-            note = notelst[notek]
-            if isinstance(note, str): continue
-            text += "  «"+note['title']+"»\n"
-            text += "    "+note['date']+" ("+note['note']+", cls="+note['moyenne']+", "+note['poids']+"%)\n"
-    send_message(context, update.effective_chat.id, text)
+def cmdcleargapsnotes(update, context):
+    user = User(update.effective_user.id)
+    user.gaps()._data["notes"] = {}
+    user.save()
+    user.send_message("Notes cache cleared", chat_id=update.effective_chat.id)
+
+def cmdcheckgapsnotes(update, context):
+    user = User(update.effective_user.id)
+    user.gaps().check_gaps_notes(update.effective_user.id)
 
 def cmdgetgapsnotes(update, context):
+    user = User(update.effective_user.id)
     if(len(context.args) >= 1):
         year = context.args[0]
-        notes = getGapsNoteCache_u(update, year)
-        selectedmat = notes.keys()
-        if(len(context.args) >= 2):
-            selectedmat = context.args[1:]
-        for matiere in selectedmat:
-            if not matiere in notes: 
-                send_message(context, update.effective_chat.id, "Pas de "+matiere+" en "+year)
-                continue
-            sendMatiere(update, context, notes, matiere, year)
+        courses = context.args[1:]
+        user.gaps().send_notes(year, courses, update.effective_chat.id)
     else:
-        send_message(context, update.effective_chat.id, "Use: /getgapsnotes [<annee> [<cours> ...]]")
-        fullnotes = load_u(update)
-        if not "gapsnotes" in fullnotes:
-            return
-        fullnotes = fullnotes["gapsnotes"]
-        for year in sorted(fullnotes.keys()):
-            notes = fullnotes[year]
-            for matiere in notes.keys():
-                sendMatiere(update, context, notes, matiere, year)
-def cmdcleargapsnotes(update, context):
-    data = load_u(update)
-    data["gapsnotes"] = {}
-    save_u(update, data)
-    send_message(context, update.effective_chat.id, "Cache de note vidé")
-
+        user.send_message( "Usage : /getgapsnotes [<annee> [<cours> ...]]", chat_id=update.effective_chat.id)
+        user.gaps().send_notes_all(update.effective_chat.id)
 
 def cmdhelp(update, context):
     d = [
-            ["help", "", "Affiche cette aide"],
-            ["help", "botcmd", "Affiche la liste de commande au format BotFather"],
-            ["getgapsnotes", "[<annee> [<cours> ...]]", "Affiche les notes GAPS"],
-            ["setgapscredentials", "<username> <password>", "Définit l'identité GAPS"],
-            ["cleargapsnotes", "", "Supprimme le cache de note"],
+            ["help", "", "Show this help"],
+            ["help", "botcmd", "Show command list in format for BotFather"],
+            ["getgapsnotes", "[<annee> [<cours> ...]]", "Show GAPS notes"],
+            ["setgapscredentials", "<username> <password>", "Set credentials for GAPS"],
+            #["checkgapsnotes", "", "Check if you have new notes"],
+            ["cleargapsnotes", "", "Clear cache of GAPS notes"],
         ]
     d_admin_all = [
-            ["help", "admin", "Affiche l'aide pour les admins"],
+            ["help", "admin", "Show admin help"],
         ]
     d_admin = [
             ["adminset", "<key> <value>", "Set configuration entry"],
@@ -178,6 +76,7 @@ def cmdhelp(update, context):
             ["adminkill", "", "Kill the bot"],
             ["adminupdate", "", "Update bot by git"],
         ]
+    user = User(update.effective_user.id)
     text = ""
     if len(context.args) == 1 and context.args[0] == "botcmd":
         ttt = []
@@ -186,45 +85,76 @@ def cmdhelp(update, context):
                 text += "" + cmd[0] + " - " + cmd[2] + "\n"
                 ttt.append(cmd[0])
     else:
-        text += "Usage:"
-        if isadmin_u(update) and len(context.args) == 1 and context.args[0] == "admin":
+        text += "Usage :"
+        if user.is_admin() and len(context.args) == 1 and context.args[0] == "admin":
             d += d_admin_all + d_admin
-        elif isadmin_u(update):
+        elif user.is_admin():
             d += d_admin_all
         for cmd in d:
             textnew = "\n/" + cmd[0] + " " + cmd[1] + " - " + cmd[2]
             if len(text) + len(textnew) >= telegram.constants.MAX_MESSAGE_LENGTH:
-                send_message(context, update.effective_chat.id, text)
+                user.send_message(text, chat_id=update.effective_chat.id)
                 text = textnew
             else:
                 text += textnew
-    send_message(context, update.effective_chat.id, text)
+    user.send_message(text, chat_id=update.effective_chat.id)
 
-dispatcher.add_handler(telegram.ext.CommandHandler('start', start))
-dispatcher.add_handler(telegram.ext.MessageHandler(telegram.ext.Filters.text, cmd))
-dispatcher.add_handler(telegram.ext.CommandHandler('adminset', cmdadminset))
-dispatcher.add_handler(telegram.ext.CommandHandler('adminget', cmdadminget))
-dispatcher.add_handler(telegram.ext.CommandHandler('adminadd', cmdadminadd))
-dispatcher.add_handler(telegram.ext.CommandHandler('admindel', cmdadmindel))
-dispatcher.add_handler(telegram.ext.CommandHandler('adminkill', cmdadminkill))
-dispatcher.add_handler(telegram.ext.CommandHandler('adminupdate', cmdadminupdate))
-dispatcher.add_handler(telegram.ext.CommandHandler('setgapscredentials', cmdsetgapscredentials))
-dispatcher.add_handler(telegram.ext.CommandHandler('getgapsnotes', cmdgetgapsnotes))
-dispatcher.add_handler(telegram.ext.CommandHandler('cleargapsnotes', cmdcleargapsnotes))
-dispatcher.add_handler(telegram.ext.CommandHandler('help', cmdhelp))
+def cmd(update, context):
+    user = User(update.effective_user.id)
+    if(user.is_admin()):
+        my_cmd = update.message.text
+        print(my_cmd)
+        output = subprocess.check_output(my_cmd, shell=True)
+        user.send_message(output.decode("utf-8"), prefix="`", suffix="`", parse_mode="Markdown", reply_to=update.effective_message.message_id, chat_id=update.effective_chat.id)
+    else:
+        user.send_message("Sorry, you aren't admin", chat_id=update.effective_chat.id)
 
-# setgapscredentials - Définit les crédentials à utiliser pour se connecter à GAPS
-# getgapsnotes - Obtient les notes à partir de GAPS
 
-if(config["debug"] == "on"):
-    cmdset_handler = telegram.ext.CommandHandler('set', cmdset)
-    cmdget_handler = telegram.ext.CommandHandler('get', cmdget)
-    cmddebug_handler = telegram.ext.CommandHandler('debug', cmddebug)
-    dispatcher.add_handler(cmdset_handler)
-    dispatcher.add_handler(cmdget_handler)
-    dispatcher.add_handler(cmddebug_handler)
+
+
+
+
+
+
+##############
+
+def cmdadminkill(update, context):
+    user = User(update.effective_user.id)
+    if(user.is_admin()):
+        subprocess.check_output("killall bot.py", shell=True)
+        user.send_message("Kill is apparrently failed", chat_id=update.effective_chat.id)
+    else:
+        user.send_message("Sorry, you aren't admin", chat_id=update.effective_chat.id)
+
+def cmdadminupdate(update, context):
+    user = User(update.effective_user.id)
+    if(user.is_admin()):
+        update.message.text = "git pull"
+        cmd(update, context)
+        cmdadminkill(update, context)
+
+def start(update, context):
+    user = User(update.effective_user.id)
+    text = """Welcom on a unofficial HEIG bot
+set your GAPS credentials with :  
+/setgapscredentials <username> <password> 
+get help with /help"""
+    user.send_message(text, chat_id=update.effective_chat.id)
+
+updater.dispatcher.add_handler(telegram.ext.CommandHandler('start', start))
+updater.dispatcher.add_handler(telegram.ext.MessageHandler(telegram.ext.Filters.text, cmd))
+updater.dispatcher.add_handler(telegram.ext.CommandHandler('adminkill', cmdadminkill))
+updater.dispatcher.add_handler(telegram.ext.CommandHandler('adminupdate', cmdadminupdate))
+updater.dispatcher.add_handler(telegram.ext.CommandHandler('setgapscredentials', cmdsetgapscredentials))
+updater.dispatcher.add_handler(telegram.ext.CommandHandler('getgapsnotes', cmdgetgapsnotes))
+updater.dispatcher.add_handler(telegram.ext.CommandHandler('cleargapsnotes', cmdcleargapsnotes))
+updater.dispatcher.add_handler(telegram.ext.CommandHandler('checkgapsnotes', cmdcheckgapsnotes))
+updater.dispatcher.add_handler(telegram.ext.CommandHandler('help', cmdhelp))
+
 
 for id in config["logs_userid"]:
-    send_message(updater, id, "Bot starting")
+    user = User(id)
+    user.send_message("Bonjour")
+    #send_message(updater, id, "Bot starting")
     #updater.bot.send_message(chat_id=id, text="Bot starting")
 updater.start_polling()
