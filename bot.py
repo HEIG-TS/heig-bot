@@ -140,7 +140,10 @@ def cmdgetgapsnotes(update, context):
             sendMatiere(update, context, notes, matiere, year)
     else:
         context.bot.send_message(chat_id=update.effective_chat.id, text="Use: /getgapsnotes [<annee> [<cours> ...]]")
-        fullnotes = load_u(update)["gapsnotes"]
+        fullnotes = load_u(update)
+        if not "gapsnotes" in fullnotes:
+            return
+        fullnotes = fullnotes["gapsnotes"]
         for year,notes in fullnotes.items():
             for matiere in notes.keys():
                 sendMatiere(update, context, notes, matiere, year)
