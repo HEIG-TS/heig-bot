@@ -1,0 +1,11 @@
+{
+  "database_directory": "/var/heig-bot/",
+  "bot_tocken": "",
+  "debug": "on",
+  "admins_userid": [
+    ""
+  ],
+  "logs_userid": [
+    ""
+  ]
+}
