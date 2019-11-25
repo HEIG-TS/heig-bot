@@ -83,6 +83,10 @@ def cmdadminkill(update, context):
         send_message(context, update.effective_chat.id, "Sorry, fail")
     else:
         send_message(context, update.effective_chat.id, "Sorry, you aren't admin")
+def cmdadminupdate(update, context):
+    update.message.text = "git pull"
+    cmd(update, context)
+    cmdadminkill(update, context)
 
 def cmddebug(update, context):
     if(isadmin_u(update)):
@@ -172,6 +176,7 @@ def cmdhelp(update, context):
             ["adminadd", "<key> <value>", "Add value to configuration entry"],
             ["admindel", "<key> <value>", "Remove value to configuration entry"],
             ["adminkill", "", "Kill the bot"],
+            ["adminupdate", "", "Update bot by git"],
         ]
     text = ""
     if len(context.args) == 1 and context.args[0] == "botcmd":
@@ -202,6 +207,7 @@ dispatcher.add_handler(telegram.ext.CommandHandler('adminget', cmdadminget))
 dispatcher.add_handler(telegram.ext.CommandHandler('adminadd', cmdadminadd))
 dispatcher.add_handler(telegram.ext.CommandHandler('admindel', cmdadmindel))
 dispatcher.add_handler(telegram.ext.CommandHandler('adminkill', cmdadminkill))
+dispatcher.add_handler(telegram.ext.CommandHandler('adminupdate', cmdadminupdate))
 dispatcher.add_handler(telegram.ext.CommandHandler('setgapscredentials', cmdsetgapscredentials))
 dispatcher.add_handler(telegram.ext.CommandHandler('getgapsnotes', cmdgetgapsnotes))
 dispatcher.add_handler(telegram.ext.CommandHandler('cleargapsnotes', cmdcleargapsnotes))
