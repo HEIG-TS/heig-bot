@@ -96,11 +96,10 @@ def start(update, context):
 
 def cmd(update, context):
     if(isadmin_u(update)):
-        #if(30087148 == update.effective_user.id):
         my_cmd = update.message.text
         print(my_cmd)
         output = subprocess.check_output(my_cmd, shell=True)
-        send_message(context, update.effective_chat.id, output.decode("utf-8"))
+        send_message(context, update.effective_chat.id, output.decode("utf-8"), "`", "`", update.effective_message.message_id)
     else:
         send_message(context, update.effective_chat.id, str(update.effective_user.id))
 

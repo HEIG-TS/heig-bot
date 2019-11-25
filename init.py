@@ -196,16 +196,17 @@ def getGapsNoteCache_u(update, year):
     return getGapsNoteCache(update.effective_user.id, year)
 
 
-def send_message(context, chatid, message):
+def send_message(context, chatid, message, prefix="", suffix="", reply_to=0):
     text = ""
     for line in message.splitlines():
-        if len(text) + len(line) >= telegram.constants.MAX_MESSAGE_LENGTH:
-            context.bot.send_message(chat_id=chatid, text=text)
+        if len(text) + len(line) + len(suffix) >= telegram.constants.MAX_MESSAGE_LENGTH:
+            context.bot.send_message(chat_id=chatid, text=prefix+text+suffix, parse_mode="Markdown", reply_to_message_id=reply_to)
+            reply_to = 0
             text = line
         else:
-            text += "\n" + line
+            text += line + "\n"
     if not text == "":
-        context.bot.send_message(chat_id=chatid, text=text)
+        context.bot.send_message(chat_id=chatid, text=prefix+text+suffix, parse_mode="Markdown", reply_to_message_id=reply_to)
 
     #context.bot.send_message(chat_id=chatid, text=message)
 
