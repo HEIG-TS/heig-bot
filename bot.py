@@ -145,7 +145,8 @@ def cmdgetgapsnotes(update, context):
         if not "gapsnotes" in fullnotes:
             return
         fullnotes = fullnotes["gapsnotes"]
-        for year,notes in fullnotes.items():
+        for year in sorted(fullnotes.keys()):
+            notes = fullnotes[year]
             for matiere in notes.keys():
                 sendMatiere(update, context, notes, matiere, year)
 
