@@ -62,7 +62,7 @@ def cmdhelp(update, context):
             ["help", "botcmd", "Show command list in format for BotFather"],
             ["getgapsnotes", "[<annee> [<cours> ...]]", "Show GAPS notes"],
             ["setgapscredentials", "<username> <password>", "Set credentials for GAPS"],
-            #["checkgapsnotes", "", "Check if you have new notes"],
+            ["checkgapsnotes", "", "Check if you have new notes"],
             ["cleargapsnotes", "", "Clear cache of GAPS notes"],
         ]
     d_admin_all = [

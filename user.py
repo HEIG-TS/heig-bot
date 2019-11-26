@@ -43,6 +43,9 @@ class User:
         else:
             self._data = json.loads("{}");
 
+    def id(self):
+        return self._user_id
+
     def save(self):
         """
             Save data in file

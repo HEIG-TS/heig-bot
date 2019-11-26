@@ -19,6 +19,7 @@
 
 import re
 import subprocess
+import json
 
 class Gaps:
     """
@@ -37,6 +38,8 @@ class Gaps:
         if not "gaps" in self._user._data:
             self._user._data["gaps"] = {}
         self._data = self._user._data["gaps"]
+    def debug(self, text):
+        print(str(self._user.id()) + ": " + text)
 
     def notes(self):
         return self._data["notes"]
@@ -147,25 +150,68 @@ class Gaps:
             self._user.save()
         return self._data["notes"][year]
 
-    def send_notes_course(self, year, course, chat_id, status="standard"):
-        matvalue = self.get_notes(year)[course]
+    def send_notes_course(self, year, course, chat_id, status=0, notes=0, only_diff=False):
+        if notes == 0:
+            notes = self.get_notes(year)[course]
         text = ""
-        if status == "new":
-            text = "New "
-        elif status == "deleted":
-            text = "Deleted "
-        text += year + " - "+course+" (moy="+matvalue["moyenne"]+")\n"
-        print(course)
-        for typ,notelst in matvalue.items():
+        if status != 0:
+            text = status+": "
+
+        send = not only_diff
+
+        if is_diff(notes['moyenne']):
+            send = True
+        course_moyenne = diff_to_md(notes['moyenne'])
+        text += year + " - "+course+" (moy="+course_moyenne+")"
+        self.debug(text)
+        text += "\n"
+        for typ,notelst in notes.items():
             if typ == "moyenne": continue
-            text += " "+typ
-            text += " (moy="+notelst['moyenne']+", "+notelst['poids']+"%)\n";
-            for notek in notelst.keys():
-                note = notelst[notek]
-                if isinstance(note, str): continue
-                text += "  «"+note['title']+"»\n"
-                text += "    "+note['date']+" ("+note['note']+", cls="+note['moyenne']+", "+note['poids']+"%)\n"
-        self._user.send_message(text, chat_id=chat_id)
+            diff = is_diff(notelst['moyenne']) or is_diff(notelst['poids'])
+            typ_moyenne = diff_to_md(notelst['moyenne'])
+            typ_poids = diff_to_md(notelst['poids'])
+            prefix_display = " "+typ+" (moy="+typ_moyenne+", "+typ_poids+"%)\n"
+            if diff or not only_diff:
+                text += prefix_display
+                prefix_display = ""
+                send = True
+            for k in notelst.keys():
+                if isinstance(notelst[k], str): continue
+                if k == "_del":
+                    data = notelst[k]
+                    st = '⊖'
+                    diff = True
+                    send = True
+                elif k == "_add": 
+                    data = notelst[k]
+                    st = '⊕'
+                    diff = True
+                    send = True
+                else:
+                    data = {k:notelst[k]}
+                    st = '   '
+                    diff = False
+                force_send = False
+                if diff or not only_diff:
+                    text += prefix_display
+                    prefix_display = ""
+                    force_send = True
+                for i in data.keys():
+                    diff = is_diff(data[i]['note']) or is_diff(data[i]['title']) \
+                            or is_diff(data[i]['moyenne']) or is_diff(data[i]['poids']) or is_diff(data[i]['date'])
+                    note = diff_to_md(data[i]['note'])
+                    title = diff_to_md(data[i]['title'])
+                    moyenne = diff_to_md(data[i]['moyenne'])
+                    poids = diff_to_md(data[i]['poids'])
+                    date = diff_to_md(data[i]['date'])
+                    if force_send or diff or not only_diff:
+                        send = True
+                        text += prefix_display
+                        prefix_display = ""
+                        text += st+"  «"+title+"»\n"
+                        text += st+"    "+date+" ("+note+", cls="+moyenne+", "+poids+"%)\n"
+        if send:
+            self._user.send_message(text, chat_id=chat_id, parse_mode="Markdown")
 
     def send_notes(self, year, courses, chat_id):
         notes = self.get_notes(year)
@@ -183,17 +229,76 @@ class Gaps:
 
     def check_gaps_notes(self, chat_id):
         for year in sorted(self._data["notes"].keys()):
+            self.debug("Check gaps notes "+year)
             newnotes = self.get_notes_online(year)
+            newnotes = json.loads(json.dumps(newnotes))
             oldnotes = self._data["notes"][year]
-            courses = set().union(newnotes.keys(), oldnotes.keys())
-            for course in courses:
-                if not course in oldnotes:
-                    self.send_notes_course(year, course, chat_id, status="new")
-                if not course in newnotes:
-                    self.send_notes_course(year, course, chat_id, status="deleted")
-                newcourse = newnotes[course]
-                oldcourse = oldnotes[course]
-                #for typ in set().union(newcourse.keys(), oldcourse.keys()):
+            diffnotes = diff(oldnotes, newnotes)
+            for course in diffnotes.keys():
+                if course != "_del" and course != "_add" and course != "_change":
+                    self.send_notes_course(year, course, chat_id, notes=diffnotes[course], only_diff=True)
+
+def is_diff(diff):
+    if isinstance(diff, dict):
+        if "_del" in diff:
+            return True
+        elif "_add" in diff:
+            return True
+        elif "_change" in diff:
+            return True
+    return False
+
+def diff_to_md(diff):
+    if isinstance(diff, dict):
+        if "_del" in diff:
+            return "~⊖"+diff["_del"]+"~"
+        elif "_add" in diff:
+            return "*⊕"+diff["_add"]+"*"
+        elif "_change" in diff:
+            return "*"+diff["_change"][0]+"→"+diff["_change"][1]+"*"
+    return diff
+
+def diff(old, new):
+    if isinstance(new, dict) and isinstance(old, dict):
+        if len(new) == 0 and len(old) != 0:
+            return {"_del": old}
+        elif len(new) != 0 and len(old) == 0:
+            return {"_add": new}
+        else:
+            tab = {}
+            for k in set().union(new.keys(), old.keys()):
+                if k not in new and k in old:
+                    if isinstance(old[k], dict):
+                        if not "_del" in tab: tab["_del"] = {}
+                        tab["_del"][k] = old[k]
+                    else:
+                        tab[k] = {"_del": old[k]}
+                elif k in new and k not in old:
+                    if isinstance(new[k], dict):
+                        if not "_add" in tab: tab["_add"] = {}
+                        tab["_add"][k] = new[k]
+                    else:
+                        tab[k] = {"_add": new[k]}
+                else:
+                    tab[k] = diff(new[k], old[k])
+            return tab
+    elif new == old:
+        return new
+    else:
+        return {"_change": [old, new]}
+
+
+
+
+    courses = set().union(newnotes.keys(), oldnotes.keys())
+    for course in courses:
+        if not course in oldnotes:
+            self.send_notes_course(year, course, chat_id, status="new")
+        if not course in newnotes:
+            self.send_notes_course(year, course, chat_id, status="deleted")
+        newcourse = newnotes[course]
+        oldcourse = oldnotes[course]
+        #for typ in set().union(newcourse.keys(), oldcourse.keys()):
 
 
 
