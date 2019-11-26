@@ -211,8 +211,6 @@ class Gaps:
                         text += st+"    "+date+" ("+note+", cls="+moyenne+", "+poids+"%)\n"
         if send:
             self._user.send_message(text, chat_id=chat_id, parse_mode="Markdown")
-        else:
-            self._user.send_message("IGNORED ", chat_id=chat_id)
         return send
 
     def send_notes(self, year, courses, chat_id):
