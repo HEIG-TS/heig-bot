@@ -18,7 +18,7 @@ apt install libxml2-utils # for binary xmllint
 
 ```bash
 cd /opt/
-git clone https://github.com/g-roch/heig-bot.git
+git clone https://github.com/g-roch/heig-bot.git -b stable
 mkdir -p /var/heig-bot/ # set right for script can write
 ```
 
