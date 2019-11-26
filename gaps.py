@@ -140,14 +140,15 @@ class Gaps:
                     notes[matiere][typenote][idnote]["moyenne"] = r.group("note")
                 continue
             print("unknown line : >>"+i+"<<")
+        self._data["notes"][year] = json.loads(json.dumps(notes))
+        self._user.save()
         return notes
 
     def get_notes(self, year):
         if not "notes" in self._data:
             self._data["notes"] = {}
         if not str(year) in self._data["notes"]:
-            self._data["notes"][year] = self.get_notes_online(year)
-            self._user.save()
+            self.get_notes_online(year)
         return self._data["notes"][year]
 
     def send_notes_course(self, year, course, chat_id, status=0, notes=0, only_diff=False):
@@ -157,10 +158,8 @@ class Gaps:
         if status != 0:
             text = status+": "
 
-        send = not only_diff
+        send = not only_diff or is_diff(notes['moyenne'])
 
-        if is_diff(notes['moyenne']):
-            send = True
         course_moyenne = diff_to_md(notes['moyenne'])
         text += year + " - "+course+" (moy="+course_moyenne+")"
         self.debug(text)
@@ -212,6 +211,9 @@ class Gaps:
                         text += st+"    "+date+" ("+note+", cls="+moyenne+", "+poids+"%)\n"
         if send:
             self._user.send_message(text, chat_id=chat_id, parse_mode="Markdown")
+        else:
+            self._user.send_message("IGNORED ", chat_id=chat_id)
+        return send
 
     def send_notes(self, year, courses, chat_id):
         notes = self.get_notes(year)
@@ -221,22 +223,34 @@ class Gaps:
         for course in notes.keys():
             if course.lower() in c or len(c) == 0:
                 self.send_notes_course(year, course, chat_id)
+
     def send_notes_all(self, chat_id):
         fullnotes = self._data["notes"]
         for year in sorted(fullnotes.keys()):
             self.send_notes(year, [], chat_id)
 
 
-    def check_gaps_notes(self, chat_id):
+    def check_gaps_notes(self, chat_id, auto=False):
+        sended = False
         for year in sorted(self._data["notes"].keys()):
             self.debug("Check gaps notes "+year)
+            oldnotes = self._data["notes"][year]
             newnotes = self.get_notes_online(year)
             newnotes = json.loads(json.dumps(newnotes))
-            oldnotes = self._data["notes"][year]
             diffnotes = diff(oldnotes, newnotes)
             for course in diffnotes.keys():
-                if course != "_del" and course != "_add" and course != "_change":
-                    self.send_notes_course(year, course, chat_id, notes=diffnotes[course], only_diff=True)
+                if course != "_del" and course != "_add":
+                    r = self.send_notes_course(year, course, chat_id, notes=diffnotes[course], only_diff=True)
+                    sended = sended or r
+                else:
+                    status = course
+                    if status == "_add": status = "⊕"
+                    elif status == "_del": status = "⊖"
+                    for i in diffnotes[course].keys():
+                        r = self.send_notes_course(year, i, chat_id, notes=diffnotes[course][i], status=status)
+                        sended = sended or r
+        if not sended and not auto:
+            self._user.send_message("No update", chat_id=chat_id)
 
 def is_diff(diff):
     if isinstance(diff, dict):
@@ -287,22 +301,6 @@ def diff(old, new):
     else:
         return {"_change": [old, new]}
 
-
-
-
-    courses = set().union(newnotes.keys(), oldnotes.keys())
-    for course in courses:
-        if not course in oldnotes:
-            self.send_notes_course(year, course, chat_id, status="new")
-        if not course in newnotes:
-            self.send_notes_course(year, course, chat_id, status="deleted")
-        newcourse = newnotes[course]
-        oldcourse = oldnotes[course]
-        #for typ in set().union(newcourse.keys(), oldcourse.keys()):
-
-
-
-                
 
 
 
