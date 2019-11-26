@@ -154,7 +154,5 @@ updater.dispatcher.add_handler(telegram.ext.CommandHandler('help', cmdhelp))
 
 for id in config["logs_userid"]:
     user = User(id)
-    user.send_message("Bonjour")
-    #send_message(updater, id, "Bot starting")
-    #updater.bot.send_message(chat_id=id, text="Bot starting")
+    user.send_message("Bot starting")
 updater.start_polling()
