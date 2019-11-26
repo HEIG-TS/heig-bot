@@ -97,8 +97,10 @@ class User:
             else:
                 text += line + "\n"
         if not text == "":
+            self.debug("SEND: "+prefix+text+suffix)
             context.bot.send_message(chat_id=chat_id, text=prefix+text+suffix, parse_mode=parse_mode, reply_to_message_id=reply_to)
-        #context.bot.send_message(chat_id=chat_id, text=message)
 
+    def debug(self, text):
+        print("["+str(self.id()) + "] " + text)
 
 

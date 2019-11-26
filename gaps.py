@@ -20,6 +20,7 @@
 import re
 import subprocess
 import json
+from datetime import date
 
 class Gaps:
     """
@@ -38,8 +39,6 @@ class Gaps:
         if not "gaps" in self._user._data:
             self._user._data["gaps"] = {}
         self._data = self._user._data["gaps"]
-    def debug(self, text):
-        print(str(self._user.id()) + ": " + text)
 
     def notes(self):
         return self._data["notes"]
@@ -162,7 +161,6 @@ class Gaps:
 
         course_moyenne = diff_to_md(notes['moyenne'])
         text += year + " - "+course+" (moy="+course_moyenne+")"
-        self.debug(text)
         text += "\n"
         for typ,notelst in notes.items():
             if typ == "moyenne": continue
@@ -230,8 +228,17 @@ class Gaps:
 
     def check_gaps_notes(self, chat_id, auto=False):
         sended = False
-        for year in sorted(self._data["notes"].keys()):
-            self.debug("Check gaps notes "+year)
+        years = sorted(self._data["notes"].keys())
+        if date.today().month < 6:
+            actualyear = str(date.today().year - 1)
+        else:
+            actualyear = str(date.today().year)
+        if actualyear not in years:
+            years.insert(len(years), actualyear)
+        if actualyear not in self._data["notes"]:
+            self._data["notes"][actualyear] = {}
+        for year in years:
+            self._user.debug("Check gaps notes "+year)
             oldnotes = self._data["notes"][year]
             newnotes = self.get_notes_online(year)
             newnotes = json.loads(json.dumps(newnotes))
