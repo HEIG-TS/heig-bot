@@ -1,6 +1,8 @@
 # HEIG bot
-## Demo
-[https://t.me/uzka_heig_prod_bot](https://t.me/uzka_heig_prod_bot)
+## Link
+**Demo:** [https://t.me/uzka_heig_prod_bot](https://t.me/uzka_heig_prod_bot)
+**News:** [https://t.me/heig_bot_news](https://t.me/heig_bot_news)
+
 
 ## Depends
  - python-telegram-bot
