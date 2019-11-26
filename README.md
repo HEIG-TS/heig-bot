@@ -22,6 +22,11 @@ git clone https://github.com/g-roch/heig-bot.git
 mkdir -p /var/heig-bot/ # set right for script can write
 ```
 
+### Create bot
+
+You need create a telegram bot with BotFather, and copy
+the bot key in `config.json`.
+
 ### Start bot
 
 ```bash
