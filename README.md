@@ -1,4 +1,7 @@
 # HEIG bot
+## Demo
+[https://t.me/uzka_heig_prod_bot](https://t.me/uzka_heig_prod_bot)
+
 ## Depends
  - python-telegram-bot
  - curl
@@ -19,11 +22,6 @@ git clone https://github.com/g-roch/heig-bot.git
 mkdir -p /var/heig-bot/ # set right for script can write
 ```
 
-### Start bot
-
-```bash
-cd /opt/heig-bot && ./bot.py
-```
 ### Start bot
 
 ```bash
