@@ -23,6 +23,19 @@ import json
 import sys
 import os.path
 import re
+from gaps import GapsError
+
+def onerror(update, context):
+    try:
+        raise context.error
+    except GapsError as error:
+        context.bot.send_message(chat_id=update.effective_chat.id, text="Error : "+str(error))
+    except:
+        context.bot.send_message(chat_id=update.effective_chat.id, text="Unknow error ! ")
+        print(str(context.error))
+
+
+sys.setrecursionlimit(10000)
 
 #if len(sys.argv) == 2:
 #    config = json.load(open(sys.argv[1], 'r'))
@@ -33,6 +46,7 @@ updater = telegram.ext.Updater(token=config["bot_tocken"], use_context=True)
 # dispatcher = updater.dispatcher
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                      level=logging.INFO)
+updater.dispatcher.add_error_handler(onerror)
 
 def saveconfig(c): 
     """

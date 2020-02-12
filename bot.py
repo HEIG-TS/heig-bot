@@ -23,6 +23,7 @@ import sys
 import subprocess
 import json
 import os.path
+import traceback
 from user import User
 from init import *
 
@@ -109,13 +110,6 @@ def cmd(update, context):
     else:
         user.send_message("Sorry, you aren't admin", chat_id=update.effective_chat.id)
 
-
-
-
-
-
-
-
 ##############
 
 def cmdadminkill(update, context):
@@ -140,6 +134,7 @@ set your GAPS credentials with :
 /setgapscredentials <username> <password> 
 get help with /help"""
     user.send_message(text, chat_id=update.effective_chat.id)
+
 
 updater.dispatcher.add_handler(telegram.ext.CommandHandler('start', start))
 updater.dispatcher.add_handler(telegram.ext.MessageHandler(telegram.ext.Filters.text, cmd))

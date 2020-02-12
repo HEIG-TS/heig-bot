@@ -17,10 +17,24 @@
     along with heig-bot. If not, see <https://www.gnu.org/licenses/>.
 """
 
+"""
+    Parsing of notes is inspired/copied by https://gitlab.theswissbay.ch/heig/hidapo
+"""
+
 import re
 import subprocess
 import json
+import requests
+import copy
+from bs4 import BeautifulSoup
 from datetime import date
+
+URL_BASE = "https://gaps.heig-vd.ch/"
+URL_CONSULTATION_NOTES = URL_BASE+"/consultation/controlescontinus/consultation.php"
+URL_ATTENDANCE = URL_BASE+"/consultation/etudiant/"
+
+class GapsError(Exception):
+    pass
 
 class Gaps:
     """
@@ -50,98 +64,85 @@ class Gaps:
         """
             Set credentials for GAPS
         """
-        cmd = "curl -s https://gaps.heig-vd.ch/consultation/controlescontinus/consultation.php -u \""+username+":"+password+"\" | grep -oE 'show_CCs\([0-9]+' | grep -oE [0-9]+ | uniq"
-        output = subprocess.check_output(cmd, shell=True)
-        if(output.decode("utf-8") == ""):
-            return "Error"
+        text = requests.get(URL_ATTENDANCE, auth=(username, password)).text
+        if text.find('idStudent = ') == -1:
+            return "Fail, check your login/password (login is HEIG login, not HES-SO login)"
         else:
             self._data["username"] = username
             self._data["password"] = password
-            self._data["gapsid"] = output.decode("utf-8").strip()
+            self._data["gapsid"] = text[text.find('idStudent = ') + 12:text.find('// default') - 2]
             self._user.save()
-            return "ok"
+            return "Success (GAPS ID: "+str(self._data["gapsid"])+")"
 
     def get_notes_online(self, year):
         """
             Get notes from GAPS
         """
         if not self.is_registred():
-            self._user.send_message("You are not registred")
-        notes = {}
-        notesdiff = {}
-        matiere = "?"
-        typenote = "?"
-        idnote = -1
-        cmd = "echo -e \"$(curl -H \"Content-Type: application/x-www-form-urlencoded; charset=utf-8\" "
-        cmd += "-s 'https://gaps.heig-vd.ch/consultation/controlescontinus/consultation.php' "
-        cmd += "--data \"rs=getStudentCCs&rsargs=%5B"+self._data["gapsid"]+"%2C"+year+"%2Cnull%5D&\" "
-        cmd += "-u \""+self._data["username"]+":"+self._data["password"]+"\" "
-        cmd += ")\" | xmllint --html - 2> /dev/null "# | sed 's/\\\\//g' "
-        output = subprocess.check_output(cmd, shell=True).decode("unicode-escape")
-        for i in output.splitlines():
-            if i[:2] == "<!": continue
-            if i[:5] == "<html": continue
-            if i[:6] == "</body": continue
-            if i[:6] == "<table": continue
-            if i[:7] == "</table": continue
-            if i == "<tr>": continue
-            if i == "</tr>": continue
-            if i == "       ": continue
-            if i == "</td>": continue
-            if i == "</div></td>": continue
-            if i == "</div></div></td>": continue
-            if i == "</div>": continue
-            if i == "<p>-e +:\"</p>": continue
-            if re.match("^<td style='\"width:[13]00px;\"' class='\"l2header\"'>[a-z.]+</td>$", i): continue
-            if re.match("^<td><div style='\"width:300px;\"class=\"formulaire_contenu_label\"' id='\"lm_[a-z0-9]+\"'><div onclick='\"toggleLMNodes\\(this.childNodes\\);\"'> <div id='\"short__lm_[a-z0-9]+\"' style='\"display:block;\"'>[^<]+&nbsp;\\[...\\]$", i): continue
-            r = re.match("^<tr><td class='\"bigheader\"' colspan='\"6\"'>(?P<mat>[^ ]+) - moyenne hors examen : (?P<moy>[0-9.]+|-)</td></tr>$", i)
-            if r:
-                matiere = r.group("mat")
-                if not matiere in notes:
-                    notes[matiere] = {}
-                notes[matiere]["moyenne"] = r.group("moy")
-                continue
-            r = re.match("^<td class='\"(odd|edge)\"' rowspan='\"[0-9]+\"'>(?P<typ>[a-zA-Z]+)<br>moyenne : (?P<moy>[0-9.]+|-)<br>poids : (?P<poid>[0-9.]+)</td>$", i)
-            if r:
-                typenote = r.group("typ")
-                idnote = -1
-                if not typenote in notes[matiere]:
-                    notes[matiere][typenote] = {}
-                notes[matiere][typenote]["moyenne"] = r.group("moy")
-                notes[matiere][typenote]["poids"] = r.group("poid")
-                continue
-            r = re.match("^<td class='\"bodyCC\"'>(?P<dt>[0-9]{2}.[0-9]{2}.[0-9]{4})</td>$", i)
-            if r:
-                idnote += 1
-                notes[matiere][typenote][idnote] = {}
-                notes[matiere][typenote][idnote]["date"] = r.group("dt")
-                continue
-            r = re.match("^       <div id='\"long__lm_[0-9a-z]+\"' style='\"display:none;\"'>(?P<descr>.+)$", i)
-            if r:
-                notes[matiere][typenote][idnote]["title"] = r.group("descr")
-                continue
-            r = re.match("^<td><div style='\"width:300px;\"class=\"formulaire_contenu_label\"' id='\"lm_[a-z0-9]+\"'>(?P<descr>[^<]+)<td class='\"bodyCC\"'>(?P<moy>[0-9.]+|-)</td>$", i)
-            if r:
-                notes[matiere][typenote][idnote]["title"] = r.group("descr")
-                notes[matiere][typenote][idnote]["moyenne"] = r.group("moy")
-                continue
-            r = re.match("^<td class='\"bodyCC\"'>[0-9]+(\\\\/[0-9]+)? \((?P<poid>[0-9]+)%\)</td>$", i)
-            if r:
-                #if not idnote in notes[matiere][typenote]:
-                #    notes[matiere][typenote][idnote] = {}
-                notes[matiere][typenote][idnote]["poids"] = r.group("poid")
-                continue
-            r = re.match("^ *<td class='\"bodyCC\"'>(?P<note>[0-9.]+|-)(</td>|\")$", i)
-            if r:
-                if "moyenne" in notes[matiere][typenote][idnote]:
-                    notes[matiere][typenote][idnote]["note"] = r.group("note")
+            raise GapsError("You are not registred")
+        text = requests.post(
+                URL_CONSULTATION_NOTES,
+                auth=(self._data['username'], self._data['password']),
+                headers={'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8'},
+                data={
+                    'rs': 'getStudentCCs',
+                    'rsargs': '[' + self._data["gapsid"] + ',' + year + ',null]',
+                    ':': None
+                }
+            ).text
+        try:
+            text = json.loads(text[2:])
+        except:
+            raise GapsError("Parsing of gaps notes page ERROR, are you changed your GAPS password ? (/setgapscredentials)")
+        soup = BeautifulSoup(text, 'html.parser')
+        rows = soup.find_all('tr')
+
+        current_course = None
+        current_eval_type = None
+        courses = {}
+
+        for row in rows:
+            row_content_type = row.contents[0].attrs['class'][0]
+            if row_content_type == 'bigheader':
+                if current_course is not None:
+                    courses[current_course.name] = current_course
+                r = re.match(
+                        "(?P<mat>[^ ]+) - moyenne hors examen : (?P<moy>[0-9.]+|-)",
+                        row.contents[0].contents[0]
+                    )
+                current_course = GradeCourse(
+                    str(r.group("mat")),
+                    str(r.group("moy"))
+                )
+            elif row_content_type == 'edge' or row_content_type == 'odd':
+                current_eval_type = row.contents[0].contents[0]
+                average = str(row.contents[0].contents[2][10:])
+                coef = str(row.contents[0].contents[4][8:])
+                current_course.evals[current_eval_type] = \
+                        GradeGroupEvaluation(average, coef)
+            elif row_content_type == 'bodyCC':
+                # checking if evaluation is released
+                if isinstance(row.contents[1].contents[0].contents[0], str):
+                    notedescr = str(row.contents[1].contents[0].contents[0])
                 else:
-                    notes[matiere][typenote][idnote]["moyenne"] = r.group("note")
-                continue
-            print("unknown line : >>"+i+"<<")
-        self._data["notes"][year] = json.loads(json.dumps(notes))
+                    notedescr = str(row.contents[1].contents[0].contents[0].contents[3].contents[0])
+                notedate = str(row.contents[0].contents[0] )
+                noteclass= str(row.contents[2].contents[0] )
+                notecoeff= str(row.contents[3].contents[0] )
+                notecoeff= re.sub(r'^[0-9/]+ \(([0-9]+)%\)$', r'\1', str(notecoeff))
+                note = str(row.contents[4].contents[0])
+                notedescr = notedescr.strip()
+
+                current_course.evals[current_eval_type].evals.append(
+                        GradeEvaluation(notedescr, notedate, noteclass, note, notecoeff)
+                    )
+
+        if current_course is not None:
+            courses[current_course.name] = current_course
+        self._data["notes"][year] = courses
         self._user.save()
-        return notes
+        return courses
+
 
     def get_notes(self, year):
         if not "notes" in self._data:
@@ -150,66 +151,14 @@ class Gaps:
             self.get_notes_online(year)
         return self._data["notes"][year]
 
-    def send_notes_course(self, year, course, chat_id, status=0, notes=0, only_diff=False):
-        if notes == 0:
+    def send_notes_course(self, year, course, chat_id, status=0, notes=0, only_diff=False, text=""):
+        if 0 == notes:
             notes = self.get_notes(year)[course]
-        text = ""
-        if status != 0:
-            text = status+": "
 
-        send = not only_diff or is_diff(notes['moyenne'])
+        text += notes.str(year)
 
-        course_moyenne = diff_to_md(notes['moyenne'])
-        text += year + " - "+course+" (moy="+course_moyenne+")"
-        text += "\n"
-        for typ,notelst in notes.items():
-            if typ == "moyenne": continue
-            diff = is_diff(notelst['moyenne']) or is_diff(notelst['poids'])
-            typ_moyenne = diff_to_md(notelst['moyenne'])
-            typ_poids = diff_to_md(notelst['poids'])
-            prefix_display = " "+typ+" (moy="+typ_moyenne+", "+typ_poids+"%)\n"
-            if diff or not only_diff:
-                text += prefix_display
-                prefix_display = ""
-                send = True
-            for k in notelst.keys():
-                if isinstance(notelst[k], str): continue
-                if k == "_del":
-                    data = notelst[k]
-                    st = '⊖'
-                    diff = True
-                    send = True
-                elif k == "_add": 
-                    data = notelst[k]
-                    st = '⊕'
-                    diff = True
-                    send = True
-                else:
-                    data = {k:notelst[k]}
-                    st = '   '
-                    diff = False
-                force_send = False
-                if diff or not only_diff:
-                    text += prefix_display
-                    prefix_display = ""
-                    force_send = True
-                for i in data.keys():
-                    diff = is_diff(data[i]['note']) or is_diff(data[i]['title']) \
-                            or is_diff(data[i]['moyenne']) or is_diff(data[i]['poids']) or is_diff(data[i]['date'])
-                    note = diff_to_md(data[i]['note'])
-                    title = diff_to_md(data[i]['title'])
-                    moyenne = diff_to_md(data[i]['moyenne'])
-                    poids = diff_to_md(data[i]['poids'])
-                    date = diff_to_md(data[i]['date'])
-                    if force_send or diff or not only_diff:
-                        send = True
-                        text += prefix_display
-                        prefix_display = ""
-                        text += st+"  «"+title+"»\n"
-                        text += st+"    "+date+" ("+note+", cls="+moyenne+", "+poids+"%)\n"
-        if send:
-            self._user.send_message(text, chat_id=chat_id, parse_mode="Markdown")
-        return send
+        self._user.send_message(text, chat_id=chat_id) #, parse_mode="Markdown")
+        return True
 
     def send_notes(self, year, courses, chat_id):
         notes = self.get_notes(year)
@@ -228,6 +177,8 @@ class Gaps:
 
     def check_gaps_notes(self, chat_id, auto=False):
         sended = False
+        if "notes" not in self._data:
+            self._data["notes"] = {}
         years = sorted(self._data["notes"].keys())
         if date.today().month < 6:
             actualyear = str(date.today().year - 1)
@@ -241,19 +192,25 @@ class Gaps:
             self._user.debug("Check gaps notes "+year)
             oldnotes = self._data["notes"][year]
             newnotes = self.get_notes_online(year)
-            newnotes = json.loads(json.dumps(newnotes))
-            diffnotes = diff(oldnotes, newnotes)
-            for course in diffnotes.keys():
-                if course != "_del" and course != "_add":
-                    r = self.send_notes_course(year, course, chat_id, notes=diffnotes[course], only_diff=True)
-                    sended = sended or r
+            for i in set().union(oldnotes.keys(), newnotes.keys()):
+                if i not in newnotes:
+                    newnotes[i] = oldnotes[i]
+                    newnotes[i].setr_status("del")
+                    self.send_notes_course(year, i, chat_id, notes=newnotes[i], only_diff=True, text="Suppression\n")
+                    sended = True 
+                elif i not in oldnotes:
+                    newnotes[i].setr_status("add")
+                    self.send_notes_course(year, i, chat_id, notes=newnotes[i], only_diff=True, text="Ajout\n")
+                    sended = True 
+                elif oldnotes[i] == newnotes[i]:
+                    pass
                 else:
-                    status = course
-                    if status == "_add": status = "⊕"
-                    elif status == "_del": status = "⊖"
-                    for i in diffnotes[course].keys():
-                        r = self.send_notes_course(year, i, chat_id, notes=diffnotes[course][i], status=status)
-                        sended = sended or r
+                    self.send_notes_course(year, i, chat_id, notes=oldnotes[i], only_diff=True, text="Ancien\n")
+                    self.send_notes_course(year, i, chat_id, notes=newnotes[i], only_diff=True, text="Nouveau\n")
+                    sended = True 
+                    #newnotes[i].merge(oldnotes[i])
+                    #self.send_notes_course(year, i, chat_id, notes=newnotes[i], only_diff=True)
+
         if not sended and not auto:
             self._user.send_message("No update", chat_id=chat_id)
 
@@ -277,35 +234,173 @@ def diff_to_md(diff):
             return "*"+diff["_change"][0]+"→"+diff["_change"][1]+"*"
     return diff
 
-def diff(old, new):
-    if isinstance(new, dict) and isinstance(old, dict):
-        if len(new) == 0 and len(old) != 0:
-            return {"_del": old}
-        elif len(new) != 0 and len(old) == 0:
-            return {"_add": new}
+class GradeCourse:
+    def __init__(self, name, average):
+        self.name = name
+        self.average = average
+        self.evals = {}
+        self.status = None
+    def __eq__(self, other):
+        if not isinstance(other, GradeCourse):
+            return NotImplemented
+        return self.name == other.name \
+                and self.average == other.average \
+                and self.evals == other.evals
+
+    def str(self, year, all=True):
+        if(self.status == "add"):
+            prefix = "(+)"
+        elif(self.status == "del"):
+            prefix = "(-)"
+        elif(self.status == "change"):
+            prefix = "(~)"
         else:
-            tab = {}
-            for k in set().union(new.keys(), old.keys()):
-                if k not in new and k in old:
-                    if isinstance(old[k], dict):
-                        if not "_del" in tab: tab["_del"] = {}
-                        tab["_del"][k] = old[k]
-                    else:
-                        tab[k] = {"_del": old[k]}
-                elif k in new and k not in old:
-                    if isinstance(new[k], dict):
-                        if not "_add" in tab: tab["_add"] = {}
-                        tab["_add"][k] = new[k]
-                    else:
-                        tab[k] = {"_add": new[k]}
-                else:
-                    tab[k] = diff(new[k], old[k])
-            return tab
-    elif new == old:
-        return new
-    else:
-        return {"_change": [old, new]}
+            prefix = "   "
+        text = ""
+        for typ,notelst in self.evals.items():
+            text += notelst.str(typ)
+        if text != "" or all or self.status != None:
+            return prefix + " " + year + " - "+self.name+" (moy="+self.average+")\n" + text
+        else:
+            return ""
+
+    def merge(self, other):
+        if other.name != self.name:
+            self.dname = self.name+"→"+other.name
+            self.name = other.name
+            self.status = "change"
+        if other.average != self.average:
+            self.daverage = self.average+"→"+other.average
+            self.average = other.average
+            self.status = "change"
+        for k in set().union(self.evals.keys(), other.evals.keys()):
+            if k not in self.evals:
+                self.evals[k] = other.evals[k]
+                other.evals[k].setr_status("add")
+            elif k not in other.evals:
+                self.evals[k].setr_status("del")
+            else:
+                self.evals[k].merge(other.evals[k])
+
+    def set_status(self, status):
+        self.status = status
+    def setr_status(self, status):
+        self.set_status(status)
+        for k in self.evals.keys():
+            self.evals[k].setr_status(status)
 
 
+class GradeGroupEvaluation:
+    def __init__(self, average, coeff):
+        self.average = average
+        self.coeff = coeff
+        self.evals = []
+        self.status = None
+    def __eq__(self, other):
+        if not isinstance(other, GradeGroupEvaluation):
+            return NotImplemented
+        return self.average == other.average \
+                and self.coeff == other.coeff \
+                and self.evals == other.evals
+    def str(self, typ, all=True):
+        if(self.status == "add"):
+            prefix = "(+)"
+        elif(self.status == "del"):
+            prefix = "(-)"
+        elif(self.status == "change"):
+            prefix = "(~)"
+        else:
+            prefix = "   "
+        text = ""
+        for data in self.evals:
+            text += data.str()
+        if text != "" or all or self.status != None:
+            return prefix+" "+typ+" (moy="+self.average+", "+self.coeff+"%)\n"+text
+        else:
+            return ""
+
+
+    def merge(self, other):
+        if self.average != other.average:
+            self.daverage = self.average+"→"+other.average
+            self.average = other.average
+            self.status = "change"
+        if self.coeff != other.coeff:
+            self.dcoeff = self.coeff+"→"+other.coeff
+            self.coeff = other.coeff
+            self.status = "change"
+        for k in range(max(len(self.evals), len(other.evals))):
+            if k >= len(self.evals):
+                print("ALL Add")
+                self.evals[k] = other.evals[k]
+                other.evals[k].set_status("add")
+            if k >= len(other.evals):
+                print("ALL Del")
+                self.evals[k].set_status("del")
+            else:
+                print("ALL Merge")
+                self.evals[k].merge(other.evals[k])
+
+    def set_status(self, status):
+        self.status = status
+    def setr_status(self, status):
+        self.set_status(status)
+        for k in self.evals:
+            k.set_status(status)
+
+class GradeEvaluation:
+    def __init__(self, description, date, classaverage, grade, coeff):
+        self.date = date
+        self.description = description
+        self.classaverage = classaverage
+        self.grade = grade
+        self.coeff = coeff
+        self.status = None
+    def __eq__(self, other):
+        if not isinstance(other, GradeEvaluation):
+            return NotImplemented
+        return self.date == other.date \
+                and self.description == other.description \
+                and self.classaverage == other.classaverage \
+                and self.grade == other.grade \
+                and self.coeff == other.coeff
+    def str(self, all=True):
+        if(self.status == "add"):
+            prefix = "(+)"
+        elif(self.status == "del"):
+            prefix = "(-)"
+        elif(self.status == "change"):
+            prefix = "(~)"
+        else:
+            prefix = "   "
+        if all or self.status != None:
+            return prefix+"  «"+self.description+"»\n" \
+                + prefix+"    "+self.date+" ("+self.grade+", cls="+self.classaverage+", "+self.coeff+"%)\n"
+        else:
+            return ""
+
+    def merge(self, other):
+        if self.date != other.date:
+            self.ddate = self.date+"→"+other.date
+            self.date = other.date
+            self.status = "change"
+        if self.description != other.description:
+            self.ddescription = self.description+"→"+other.description
+            self.description = other.description
+            self.status = "change"
+        if self.classaverage != other.classaverage:
+            self.dclassaverage = self.classaverage+"→"+other.classaverage
+            self.classaverage = other.classaverage
+            self.status = "change"
+        if self.grade != other.grade:
+            self.dgrade = self.grade+"→"+other.grade
+            self.grade = other.grade
+            self.status = "change"
+        if self.coeff != other.coeff:
+            self.dcoeff = self.coeff+"→"+other.coeff
+            self.coeff = other.coeff
+            self.status = "change"
+    def set_status(self, status):
+        self.status = status
 
 

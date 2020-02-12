@@ -19,6 +19,7 @@
 
 import telegram.ext
 import json
+import pickle
 import os.path
 
 from init import config
@@ -36,12 +37,12 @@ class User:
 
     def __init__(self, user_id):
         self._user_id = user_id
-        self._filename = config["database_directory"]+"/"+str(self._user_id)+".json"
+        self._filename = config["database_directory"]+"/"+str(self._user_id)+".pickle"
         if(os.path.isfile(self._filename)):
-            file = open(self._filename, 'r')
-            self._data = json.load(file);
+            file = open(self._filename, 'rb')
+            self._data = pickle.load(file);
         else:
-            self._data = json.loads("{}");
+            self._data = {};
 
     def id(self):
         return self._user_id
@@ -50,8 +51,8 @@ class User:
         """
             Save data in file
         """
-        file = open(self._filename, 'w')
-        json.dump(self._data, file, indent=2)
+        file = open(self._filename, 'wb')
+        pickle.dump(self._data, file)
 
 
     def gaps(self):

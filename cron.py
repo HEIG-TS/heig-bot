@@ -26,9 +26,8 @@ from init import config
 from user import User
 
 
-
 for i in os.scandir(config["database_directory"]):
-    id = i.name[:-5]
+    id = i.name[:-7]
     user = User(id)
     user.gaps().check_gaps_notes(id, auto=True)
 
