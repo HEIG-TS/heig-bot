@@ -1,4 +1,7 @@
 # HEIG bot
+Telegram bot for check gradle in GAPS (HEIG-VD's platform for gradle).
+This can also check regulary if a user have new gradle and send message if.
+
 ## Link
  - **Demo:** [https://t.me/uzka_heig_prod_bot](https://t.me/uzka_heig_prod_bot)
  - **News:** [https://t.me/heig_bot_news](https://t.me/heig_bot_news)
@@ -11,8 +14,6 @@
 ### On Debian
 ```bash
 pip3 install python-telegram-bot beautifulsoup4
-apt install curl 
-apt install libxml2-utils # for binary xmllint
 ```
 
 ## Installation
