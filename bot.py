@@ -70,10 +70,6 @@ def cmdhelp(update, context):
             ["help", "admin", "Show admin help"],
         ]
     d_admin = [
-            ["adminset", "<key> <value>", "Set configuration entry"],
-            ["adminget", "<key>", "Get configuration entry"],
-            ["adminadd", "<key> <value>", "Add value to configuration entry"],
-            ["admindel", "<key> <value>", "Remove value to configuration entry"],
             ["adminkill", "", "Kill the bot"],
             ["adminupdate", "", "Update bot by git"],
         ]
