@@ -9,11 +9,16 @@ This can also check regulary if a user have new gradle and send message if.
 
 ## Depends
  - python-telegram-bot
- - python-beautifulsoup4
+ - beautifulsoup4
 
 ### On Debian
 ```bash
 pip3 install python-telegram-bot beautifulsoup4
+```
+
+### On Arch Linux
+```bash
+sudo pacman -S python-telegram-bot python-beautifulsoup4
 ```
 
 ## Installation
@@ -32,10 +37,10 @@ the bot key in `config.json`. (value of `bot_tocken`)
 
 ### Admin/Logs configuration 
 
-heig-bot can have admin, you can copy telegrame userid (it's a number)
+heig-bot can have admin, you can copy telegram userid (it's a number)
 to `config.json` in `admins_userid`
 
-heig-bot can send a message when he start, you can copy telegrame userid 
+heig-bot can send a message when he start, you can copy telegram userid 
 (it's a number) to `config.json` in `admins_userid`
 
 ### Start bot
