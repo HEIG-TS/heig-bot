@@ -42,7 +42,7 @@ sys.setrecursionlimit(10000)
 #else:
 config = json.load(open("config.json", 'r'))
 
-updater = telegram.ext.Updater(token=config["bot_tocken"], use_context=True)
+updater = telegram.ext.Updater(token=config["bot_token"], use_context=True)
 # dispatcher = updater.dispatcher
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                      level=logging.INFO)
