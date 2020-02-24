@@ -9,11 +9,16 @@ This can also check regulary if a user have new gradle and send message if.
 
 ## Depends
  - python-telegram-bot
- - python-beautifulsoup4
+ - beautifulsoup4
 
 ### On Debian
 ```bash
 pip3 install python-telegram-bot beautifulsoup4
+```
+
+### On Arch Linux
+```bash
+sudo pacman -S python-telegram-bot python-beautifulsoup4
 ```
 
 ## Installation
