@@ -34,18 +34,27 @@ URL_CONSULTATION_NOTES = URL_BASE+"/consultation/controlescontinus/consultation.
 URL_ATTENDANCE = URL_BASE+"/consultation/etudiant/"
 
 class GapsError(Exception):
+    """
+        Class for manage exception on Gaps
+    """
     pass
 
 class Gaps:
     """
         Class for access to GAPS account
 
-        - _user
+        :ivar _user: User object for GAPS access
+        :vartype _user: User
+
+        :ivar _data: GAPS information
+            _data["notes"][2020]["ANA"] = GradeCourse
+        :vartype _data: User
     """
 
     def __init__(self, user):
         """
             Make a Gaps object
+
             :param user: User object for configuration
             :type user: User
         """
@@ -54,15 +63,24 @@ class Gaps:
             self._user._data["gaps"] = {}
         self._data = self._user._data["gaps"]
 
-    def notes(self):
-        return self._data["notes"]
+    #def notes(self):
+    #    return self._data["notes"]
 
     def is_registred(self):
+        """
+            Indicate if we have credentials for GAPS
+        """
         return "gapsid" in self._data
 
     def set_credentials(self, username, password):
         """
             Set credentials for GAPS
+
+            :param username: GAPS username, it can be different to SSO
+            :type username: str
+
+            :param password: GAPS password
+            :type password: str
         """
         text = requests.get(URL_ATTENDANCE, auth=(username, password)).text
         if text.find('idStudent = ') == -1:
@@ -77,6 +95,9 @@ class Gaps:
     def get_notes_online(self, year):
         """
             Get notes from GAPS
+
+            :param year: Year to get (for 2020-2021 is 2020)
+            :type year: 
         """
         if not self.is_registred():
             raise GapsError("You are not registred")
@@ -145,22 +166,58 @@ class Gaps:
 
 
     def get_notes(self, year):
+        """
+            Get notes from cache, if no cache for this year download from GAPS
+
+            :param year: Year to get (for 2020-2021 is 2020)
+            :type year: 
+        """
         if not "notes" in self._data:
             self._data["notes"] = {}
         if not str(year) in self._data["notes"]:
             self.get_notes_online(year)
         return self._data["notes"][year]
 
-    def send_notes_course(self, year, course, chat_id, status=0, notes=0, only_diff=False, text=""):
+    def send_notes_course(self, year, course, chat_id, notes=0, prefix=""):
+        """
+            Send notes for branche
+
+            :param year: Year to send (for 2020-2021 is 2020)
+            :type year: 
+
+            :param course: branchname to send
+            :type course: str
+
+            :param chat_id: send message to this chat id
+            :type chat_id: int
+
+            :param notes: notes to send, if isn't specified, it's getted from cache or online
+            :type notes: 
+
+            :param prefix: prefix of message to user
+            :type prefix: str
+        """
         if 0 == notes:
             notes = self.get_notes(year)[course]
 
-        text += notes.str(year)
+        text = prefix + notes.str(year)
 
         self._user.send_message(text, chat_id=chat_id) #, parse_mode="Markdown")
         return True
 
     def send_notes(self, year, courses, chat_id):
+        """
+            Send notes for multiple branche
+
+            :param year: Year to send (for 2020-2021 is 2020)
+            :type year: 
+
+            :param courses: list of branchname to send
+            :type courses: 
+
+            :param chat_id: send message to this chat id
+            :type chat_id: int
+        """
         notes = self.get_notes(year)
         c = []
         for i in courses:
@@ -170,12 +227,27 @@ class Gaps:
                 self.send_notes_course(year, course, chat_id)
 
     def send_notes_all(self, chat_id):
+        """
+            Send all notes in cache
+
+            :param chat_id: send message to this chat id
+            :type chat_id: int
+        """
         fullnotes = self._data["notes"]
         for year in sorted(fullnotes.keys()):
             self.send_notes(year, [], chat_id)
 
 
     def check_gaps_notes(self, chat_id, auto=False):
+        """
+            Check update on GAPS
+
+            :param chat_id: send message to this chat id
+            :type chat_id: int
+
+            :param auto: Indicate if this function is called by user or by cron
+            :type auto: bool
+        """
         sended = False
         if "notes" not in self._data:
             self._data["notes"] = {}
@@ -196,50 +268,51 @@ class Gaps:
                 if i not in newnotes:
                     newnotes[i] = oldnotes[i]
                     newnotes[i].setr_status("del")
-                    self.send_notes_course(year, i, chat_id, notes=newnotes[i], only_diff=True, text="Suppression\n")
+                    self.send_notes_course(year, i, chat_id, notes=newnotes[i], prefix="Suppression\n")
                     sended = True 
                 elif i not in oldnotes:
                     newnotes[i].setr_status("add")
-                    self.send_notes_course(year, i, chat_id, notes=newnotes[i], only_diff=True, text="Ajout\n")
+                    self.send_notes_course(year, i, chat_id, notes=newnotes[i], prefix="Ajout\n")
                     sended = True 
                 elif oldnotes[i] == newnotes[i]:
                     pass
                 else:
-                    self.send_notes_course(year, i, chat_id, notes=oldnotes[i], only_diff=True, text="Ancien\n")
-                    self.send_notes_course(year, i, chat_id, notes=newnotes[i], only_diff=True, text="Nouveau\n")
+                    self.send_notes_course(year, i, chat_id, notes=oldnotes[i], prefix="Ancien\n")
+                    self.send_notes_course(year, i, chat_id, notes=newnotes[i], prefix="Nouveau\n")
                     sended = True 
-                    #newnotes[i].merge(oldnotes[i])
-                    #self.send_notes_course(year, i, chat_id, notes=newnotes[i], only_diff=True)
 
         if not sended and not auto:
             self._user.send_message("No update", chat_id=chat_id)
 
-def is_diff(diff):
-    if isinstance(diff, dict):
-        if "_del" in diff:
-            return True
-        elif "_add" in diff:
-            return True
-        elif "_change" in diff:
-            return True
-    return False
-
-def diff_to_md(diff):
-    if isinstance(diff, dict):
-        if "_del" in diff:
-            return "~⊖"+diff["_del"]+"~"
-        elif "_add" in diff:
-            return "*⊕"+diff["_add"]+"*"
-        elif "_change" in diff:
-            return "*"+diff["_change"][0]+"→"+diff["_change"][1]+"*"
-    return diff
-
 class GradeCourse:
+    """
+        Class for stockage of grade course.
+
+        Cette classe corresponds à une branche
+
+        :ivar name: 
+        :vartype name: str
+
+        :ivar average: 
+        :vartype average:
+
+        :ivar evals: 
+        :vartype evals:
+    """
     def __init__(self, name, average):
+        """
+            Make a new GradeCourse object
+
+            :param name: Name of course
+            :type name: str
+
+            :param average: Average of course for user
+            :type name: str
+        """
         self.name = name
         self.average = average
         self.evals = {}
-        self.status = None
+
     def __eq__(self, other):
         if not isinstance(other, GradeCourse):
             return NotImplemented
@@ -247,115 +320,75 @@ class GradeCourse:
                 and self.average == other.average \
                 and self.evals == other.evals
 
-    def str(self, year, all=True):
-        if(self.status == "add"):
-            prefix = "(+)"
-        elif(self.status == "del"):
-            prefix = "(-)"
-        elif(self.status == "change"):
-            prefix = "(~)"
-        else:
-            prefix = "   "
+    def str(self, year):
         text = ""
         for typ,notelst in self.evals.items():
             text += notelst.str(typ)
-        if text != "" or all or self.status != None:
-            return prefix + " " + year + " - "+self.name+" (moy="+self.average+")\n" + text
+        if text != "":
+            return year + " - "+self.name+" (moy="+self.average+")\n" + text
         else:
             return ""
 
-    def merge(self, other):
-        if other.name != self.name:
-            self.dname = self.name+"→"+other.name
-            self.name = other.name
-            self.status = "change"
-        if other.average != self.average:
-            self.daverage = self.average+"→"+other.average
-            self.average = other.average
-            self.status = "change"
-        for k in set().union(self.evals.keys(), other.evals.keys()):
-            if k not in self.evals:
-                self.evals[k] = other.evals[k]
-                other.evals[k].setr_status("add")
-            elif k not in other.evals:
-                self.evals[k].setr_status("del")
-            else:
-                self.evals[k].merge(other.evals[k])
-
-    def set_status(self, status):
-        self.status = status
-    def setr_status(self, status):
-        self.set_status(status)
-        for k in self.evals.keys():
-            self.evals[k].setr_status(status)
-
-
 class GradeGroupEvaluation:
+    """
+        Class for stockage of grade group of evaluation
+
+        Cette classe corresponds à un groupe d'une branche (labo ou controlecontinus)
+
+        :ivar average: 
+        :vartype average:
+
+        :ivar coeff: 
+        :vartype coeff:
+
+        :ivar evals: 
+        :vartype evals:
+    """
     def __init__(self, average, coeff):
         self.average = average
         self.coeff = coeff
         self.evals = []
-        self.status = None
     def __eq__(self, other):
         if not isinstance(other, GradeGroupEvaluation):
             return NotImplemented
         return self.average == other.average \
                 and self.coeff == other.coeff \
                 and self.evals == other.evals
-    def str(self, typ, all=True):
-        if(self.status == "add"):
-            prefix = "(+)"
-        elif(self.status == "del"):
-            prefix = "(-)"
-        elif(self.status == "change"):
-            prefix = "(~)"
-        else:
-            prefix = "   "
+    def str(self, typ):
         text = ""
         for data in self.evals:
             text += data.str()
-        if text != "" or all or self.status != None:
-            return prefix+" "+typ+" (moy="+self.average+", "+self.coeff+"%)\n"+text
+        if text != "":
+            return typ+" (moy="+self.average+", "+self.coeff+"%)\n"+text
         else:
             return ""
 
 
-    def merge(self, other):
-        if self.average != other.average:
-            self.daverage = self.average+"→"+other.average
-            self.average = other.average
-            self.status = "change"
-        if self.coeff != other.coeff:
-            self.dcoeff = self.coeff+"→"+other.coeff
-            self.coeff = other.coeff
-            self.status = "change"
-        for k in range(max(len(self.evals), len(other.evals))):
-            if k >= len(self.evals):
-                print("ALL Add")
-                self.evals[k] = other.evals[k]
-                other.evals[k].set_status("add")
-            if k >= len(other.evals):
-                print("ALL Del")
-                self.evals[k].set_status("del")
-            else:
-                print("ALL Merge")
-                self.evals[k].merge(other.evals[k])
-
-    def set_status(self, status):
-        self.status = status
-    def setr_status(self, status):
-        self.set_status(status)
-        for k in self.evals:
-            k.set_status(status)
-
 class GradeEvaluation:
+    """
+        Class for stockage of a evaluation
+
+        :ivar date: 
+        :vartype date:
+
+        :ivar description: 
+        :vartype description:
+
+        :ivar classaverage: 
+        :vartype classaverage:
+
+        :ivar grade: 
+        :vartype grade:
+
+        :ivar coeff: 
+        :vartype coeff:
+    """
     def __init__(self, description, date, classaverage, grade, coeff):
         self.date = date
         self.description = description
         self.classaverage = classaverage
         self.grade = grade
         self.coeff = coeff
-        self.status = None
     def __eq__(self, other):
         if not isinstance(other, GradeEvaluation):
             return NotImplemented
@@ -364,43 +397,7 @@ class GradeEvaluation:
                 and self.classaverage == other.classaverage \
                 and self.grade == other.grade \
                 and self.coeff == other.coeff
-    def str(self, all=True):
-        if(self.status == "add"):
-            prefix = "(+)"
-        elif(self.status == "del"):
-            prefix = "(-)"
-        elif(self.status == "change"):
-            prefix = "(~)"
-        else:
-            prefix = "   "
-        if all or self.status != None:
-            return prefix+"  «"+self.description+"»\n" \
-                + prefix+"    "+self.date+" ("+self.grade+", cls="+self.classaverage+", "+self.coeff+"%)\n"
-        else:
-            return ""
-
-    def merge(self, other):
-        if self.date != other.date:
-            self.ddate = self.date+"→"+other.date
-            self.date = other.date
-            self.status = "change"
-        if self.description != other.description:
-            self.ddescription = self.description+"→"+other.description
-            self.description = other.description
-            self.status = "change"
-        if self.classaverage != other.classaverage:
-            self.dclassaverage = self.classaverage+"→"+other.classaverage
-            self.classaverage = other.classaverage
-            self.status = "change"
-        if self.grade != other.grade:
-            self.dgrade = self.grade+"→"+other.grade
-            self.grade = other.grade
-            self.status = "change"
-        if self.coeff != other.coeff:
-            self.dcoeff = self.coeff+"→"+other.coeff
-            self.coeff = other.coeff
-            self.status = "change"
-    def set_status(self, status):
-        self.status = status
-
+    def str(self):
+        return "  "+self.description+"\n" \
+            + "    "+self.date+" ("+self.grade+", cls="+self.classaverage+", "+self.coeff+"%)\n"
 

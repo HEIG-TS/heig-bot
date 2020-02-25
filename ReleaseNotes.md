@@ -3,6 +3,7 @@
 ## next release
  - Update documentation
  - Add telegram userid and chatid to help message
+ - Clear unsued code on gaps.py
 
 ## v0.2
  - Rewrite gaps grade parsing with beautifulsoup4
