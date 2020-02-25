@@ -43,10 +43,14 @@ the bot key in `config.json`. (value of `bot_tocken`)
 ### Admin/Logs configuration 
 
 heig-bot can have admin, you can copy telegram userid (it's a number)
-to `config.json` in `admins_userid`
+to `config.json` in `admins_userid`.
 
 heig-bot can send a message when he start, you can copy telegram userid 
-(it's a number) to `config.json` in `admins_userid`
+(it's a number) to `config.json` in `admins_userid`.
+
+You can see your telegram userid when you send `/help` to the `heig-bot`.
+The bot can start without admin, but you need remove "" from `admins_userid`
+and `logs_userid` in `config.json`, for empty array.
 
 ### Start bot
 
