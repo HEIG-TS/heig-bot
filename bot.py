@@ -24,6 +24,7 @@ import subprocess
 import json
 import os.path
 import traceback
+
 from user import User
 from init import *
 
@@ -94,7 +95,9 @@ def cmdhelp(update, context):
                 text = textnew
             else:
                 text += textnew
-    user.send_message(text, chat_id=update.effective_chat.id)
+    text += "\n\nYour telegram id is `"+str(update.effective_user.id)+"`\n"
+    text += "Your chat id is `"+str(update.effective_chat.id)+"`\n"
+    user.send_message(text, chat_id=update.effective_chat.id, parse_mode="Markdown")
 
 def cmd(update, context):
     user = User(update.effective_user.id)
@@ -133,15 +136,16 @@ get help with /help"""
 
 
 updater.dispatcher.add_handler(telegram.ext.CommandHandler('start', start))
-updater.dispatcher.add_handler(telegram.ext.MessageHandler(telegram.ext.Filters.text, cmd))
+updater.dispatcher.add_handler(telegram.ext.CommandHandler('help', cmdhelp))
 updater.dispatcher.add_handler(telegram.ext.CommandHandler('adminkill', cmdadminkill))
 updater.dispatcher.add_handler(telegram.ext.CommandHandler('adminupdate', cmdadminupdate))
 updater.dispatcher.add_handler(telegram.ext.CommandHandler('setgapscredentials', cmdsetgapscredentials))
 updater.dispatcher.add_handler(telegram.ext.CommandHandler('getgapsnotes', cmdgetgapsnotes))
 updater.dispatcher.add_handler(telegram.ext.CommandHandler('cleargapsnotes', cmdcleargapsnotes))
 updater.dispatcher.add_handler(telegram.ext.CommandHandler('checkgapsnotes', cmdcheckgapsnotes))
-updater.dispatcher.add_handler(telegram.ext.CommandHandler('help', cmdhelp))
 
+# Need to be after CommandHandler for non-admin user
+updater.dispatcher.add_handler(telegram.ext.MessageHandler(telegram.ext.Filters.text, cmd))
 
 for id in config["logs_userid"]:
     user = User(id)

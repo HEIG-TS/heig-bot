@@ -1,5 +1,9 @@
 # Release notes
 
+## next release
+ - Update documentation
+ - Add telegram userid and chatid to help message
+
 ## v0.2
  - Rewrite gaps grade parsing with beautifulsoup4
  - remove depends curl xmllint
