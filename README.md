@@ -11,7 +11,7 @@ This can also check regulary if a user have new gradle and send message if.
  - python-telegram-bot
  - beautifulsoup4
 
-### On Debian buster and later
+### On Debian buster and earlier
 ```bash
 pip3 install python-telegram-bot beautifulsoup4
 ```

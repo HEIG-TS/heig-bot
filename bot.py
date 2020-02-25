@@ -29,6 +29,18 @@ from user import User
 from init import *
 
 def cmdsetgapscredentials(update, context):
+    """
+        treatment of command /setgappscredentials
+
+        Change user credentials for connexion to GAPS, for security the 
+        message from user contain password is deleted
+
+        :param update: 
+        :type update: telegram.Update
+
+        :param context: 
+        :type context: telegram.ext.CallbackContext
+    """
     user = User(update.effective_user.id)
     if(len(context.args) == 2):
         act_result = user.gaps().set_credentials(context.args[0], context.args[1])
@@ -39,16 +51,55 @@ def cmdsetgapscredentials(update, context):
     user.send_message("Your message is deleted for security", chat_id=update.effective_chat.id)
 
 def cmdcleargapsnotes(update, context):
+    """
+        treatment of command /cleargapsnotes
+
+        Remove cache of GAPS notes
+
+        :param update: 
+        :type update: telegram.Update
+
+        :param context: 
+        :type context: telegram.ext.CallbackContext
+    """
     user = User(update.effective_user.id)
     user.gaps()._data["notes"] = {}
     user.save()
     user.send_message("Notes cache cleared", chat_id=update.effective_chat.id)
 
 def cmdcheckgapsnotes(update, context):
+    """
+        treatment of command /checkgapsnotes
+
+        Check online if user have new mark or an update
+
+        :param update: 
+        :type update: telegram.Update
+
+        :param context: 
+        :type context: telegram.ext.CallbackContext
+    """
     user = User(update.effective_user.id)
     user.gaps().check_gaps_notes(update.effective_user.id)
 
 def cmdgetgapsnotes(update, context):
+    """
+        treatment of command /getgapsnotes [<year> [<branch> ...]]
+
+        Send to user the note.
+
+        If no year and no branch specified, all mark in cache send
+
+        If only no branch specified, all mark of the specific year send
+
+        If multiple branch specified, all mark of specified branch send
+
+        :param update: 
+        :type update: telegram.Update
+
+        :param context: 
+        :type context: telegram.ext.CallbackContext
+    """
     user = User(update.effective_user.id)
     if(len(context.args) >= 1):
         year = context.args[0]
@@ -59,6 +110,17 @@ def cmdgetgapsnotes(update, context):
         user.gaps().send_notes_all(update.effective_chat.id)
 
 def cmdhelp(update, context):
+    """
+        treatment of command /help
+
+        Send help information to user
+
+        :param update: 
+        :type update: telegram.Update
+
+        :param context: 
+        :type context: telegram.ext.CallbackContext
+    """
     d = [
             ["help", "", "Show this help"],
             ["help", "botcmd", "Show command list in format for BotFather"],
@@ -112,6 +174,17 @@ def cmd(update, context):
 ##############
 
 def cmdadminkill(update, context):
+    """
+        treatment of command /adminkill
+
+        Exec `killall bot.py`
+
+        :param update: 
+        :type update: telegram.Update
+
+        :param context: 
+        :type context: telegram.ext.CallbackContext
+    """
     user = User(update.effective_user.id)
     if(user.is_admin()):
         subprocess.check_output("killall bot.py", shell=True)
@@ -120,6 +193,18 @@ def cmdadminkill(update, context):
         user.send_message("Sorry, you aren't admin", chat_id=update.effective_chat.id)
 
 def cmdadminupdate(update, context):
+    """
+        treatment of command /adminkill
+
+        Exec `git pull`
+        Exec `killall bot.py`
+
+        :param update: 
+        :type update: telegram.Update
+
+        :param context: 
+        :type context: telegram.ext.CallbackContext
+    """
     user = User(update.effective_user.id)
     if(user.is_admin()):
         update.message.text = "git pull"
@@ -127,6 +212,17 @@ def cmdadminupdate(update, context):
         cmdadminkill(update, context)
 
 def start(update, context):
+    """
+        treatment of command /start
+
+        Send initial information to user
+
+        :param update: 
+        :type update: telegram.Update
+
+        :param context: 
+        :type context: telegram.ext.CallbackContext
+    """
     user = User(update.effective_user.id)
     text = """Welcom on a unofficial HEIG bot
 set your GAPS credentials with :  

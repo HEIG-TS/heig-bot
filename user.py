@@ -30,12 +30,24 @@ class User:
     """
         User manager
 
-        - _user_id
-        - _data
-        - _filename
+        :ivar _user_id: Telegram id of user
+        :vartype _user_id: 
+
+        :ivar _filename: Filename of pickle file for user's data stockage
+        :vartype _filename: str
+
+        :ivar _data: User's data
+            _data["gaps"] see Gaps._data
+        :vartype _data: dict
     """
 
     def __init__(self, user_id):
+        """
+            Initialize User object, and if possible load user's data
+
+            :param user_id: Telegram userid
+            :type user_id: 
+        """
         self._user_id = user_id
         self._filename = config["database_directory"]+"/"+str(self._user_id)+".pickle"
         if(os.path.isfile(self._filename)):
@@ -45,11 +57,14 @@ class User:
             self._data = {};
 
     def id(self):
+        """
+            get telegram id of user
+        """
         return self._user_id
 
     def save(self):
         """
-            Save data in file
+            Save user's data on disk
         """
         file = open(self._filename, 'wb')
         pickle.dump(self._data, file)
@@ -58,6 +73,9 @@ class User:
     def gaps(self):
         """
             Get gaps object for current user
+
+            :returns: Gaps object of current user
+            :rtype: Gaps
         """
         filename = config["database_directory"]+"/"+str(self._user_id)+".json"
         return Gaps(self)
@@ -65,26 +83,34 @@ class User:
     def is_admin(self):
         """
             Indicate if this user is admin
+            
+            :rtype: bool
         """
         return str(self._user_id) in config["admins_userid"] or self._user_id in config["admins_userid"]
 
     def send_message(self, message, prefix="", suffix="", reply_to=0, context=updater, chat_id=0, parse_mode=None):
         """
-            Send message to user
+            Send a message to user
 
             :param message: message to send
             :type message: str
+
             :param prefix: prefix to add on all message
             :type prefix: str
+
             :param suffix: suffix to add on all message
             :type suffix: str
+            
             :param reply_to: message id to reply
             :type reply_to: int
+
             :param context: context of message
-            :type context: ??
+            :type context: telegram.ext.CallbackContext
+
             :param chat_id: chat id of destination of message
             :type chat_id: int
-            :param parse_mode: Format of message (Markdown or HTML
+
+            :param parse_mode: Format of message (Markdown or HTML)
             :type parse_mode: str
         """
         if chat_id == 0:
@@ -102,6 +128,12 @@ class User:
             context.bot.send_message(chat_id=chat_id, text=prefix+text+suffix, parse_mode=parse_mode, reply_to_message_id=reply_to)
 
     def debug(self, text):
+        """
+            Display debug information on console
+
+            :param text: Information to display
+            :type text: str
+        """
         print("["+str(self.id()) + "] " + text)
 
 
