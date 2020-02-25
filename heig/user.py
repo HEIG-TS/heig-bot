@@ -22,9 +22,9 @@ import json
 import pickle
 import os.path
 
-from init import config
-from init import updater
-from gaps import Gaps
+from heig.init import config
+from heig.init import updater
+from heig.gaps import Gaps
 
 class User:
     """
@@ -124,7 +124,7 @@ class User:
             else:
                 text += line + "\n"
         if not text == "":
-            self.debug("SEND: "+prefix+text+suffix)
+            self.debug("SEND: "+(prefix+text+suffix).strip())
             context.bot.send_message(chat_id=chat_id, text=prefix+text+suffix, parse_mode=parse_mode, reply_to_message_id=reply_to)
 
     def debug(self, text):

@@ -1,6 +1,8 @@
 # Release notes
 
 ## next release
+ - Move class to package heig
+   - **NEED** re-create pickle user-database
  - Update documentation
  - Add telegram userid and chatid to help message
  - Clear unsued code on gaps.py

@@ -23,7 +23,7 @@ import json
 import sys
 import os.path
 import re
-from gaps import GapsError
+from heig.gaps import GapsError
 
 def onerror(update, context):
     try:

@@ -22,8 +22,8 @@ import sys
 import subprocess
 import json
 import os
-from init import config
-from user import User
+from heig.init import config
+from heig.user import User
 
 
 for i in os.scandir(config["database_directory"]):

@@ -25,8 +25,8 @@ import json
 import os.path
 import traceback
 
-from user import User
-from init import *
+from heig.user import User
+from heig.init import *
 
 def cmdsetgapscredentials(update, context):
     """
