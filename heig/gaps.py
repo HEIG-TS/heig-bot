@@ -267,11 +267,9 @@ class Gaps:
             for i in set().union(oldnotes.keys(), newnotes.keys()):
                 if i not in newnotes:
                     newnotes[i] = oldnotes[i]
-                    newnotes[i].setr_status("del")
                     self.send_notes_course(year, i, chat_id, notes=newnotes[i], prefix="Suppression\n")
                     sended = True 
                 elif i not in oldnotes:
-                    newnotes[i].setr_status("add")
                     self.send_notes_course(year, i, chat_id, notes=newnotes[i], prefix="Ajout\n")
                     sended = True 
                 elif oldnotes[i] == newnotes[i]:
