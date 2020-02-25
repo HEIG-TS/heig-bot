@@ -26,6 +26,8 @@ from heig.init import config
 from heig.init import updater
 from heig.gaps import Gaps
 
+DIR_DB_PICKLE = "/heig.user/"
+
 class User:
     """
         User manager
@@ -49,7 +51,7 @@ class User:
             :type user_id: 
         """
         self._user_id = user_id
-        self._filename = config["database_directory"]+"/"+str(self._user_id)+".pickle"
+        self._filename = config["database_directory"]+DIR_DB_PICKLE+str(self._user_id)+".pickle"
         if(os.path.isfile(self._filename)):
             file = open(self._filename, 'rb')
             self._data = pickle.load(file);
@@ -66,6 +68,7 @@ class User:
         """
             Save user's data on disk
         """
+        os.mkdir(config["database_directory"]+DIR_DB_PICKLE)
         file = open(self._filename, 'wb')
         pickle.dump(self._data, file)
 
@@ -77,7 +80,6 @@ class User:
             :returns: Gaps object of current user
             :rtype: Gaps
         """
-        filename = config["database_directory"]+"/"+str(self._user_id)+".json"
         return Gaps(self)
 
     def is_admin(self):

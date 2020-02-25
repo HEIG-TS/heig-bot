@@ -32,6 +32,7 @@ from datetime import date
 URL_BASE = "https://gaps.heig-vd.ch/"
 URL_CONSULTATION_NOTES = URL_BASE+"/consultation/controlescontinus/consultation.php"
 URL_ATTENDANCE = URL_BASE+"/consultation/etudiant/"
+URL_TIMETABLE = URL_BASE+"/consultation/horaires/"
 
 class GapsError(Exception):
     """
@@ -62,9 +63,6 @@ class Gaps:
         if not "gaps" in self._user._data:
             self._user._data["gaps"] = {}
         self._data = self._user._data["gaps"]
-
-    #def notes(self):
-    #    return self._data["notes"]
 
     def is_registred(self):
         """

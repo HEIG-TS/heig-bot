@@ -10,20 +10,23 @@ This can also check regulary if a user have new gradle and send message if.
 ## Depends
  - python-telegram-bot
  - beautifulsoup4
+ - ics
 
 ### On Debian buster and earlier
 ```bash
-pip3 install python-telegram-bot beautifulsoup4
+pip3 install python-telegram-bot beautifulsoup4 ics
 ```
 
 ### On Debian bullseye/sid
 ```bash
 apt install python3-python-telegram-bot python3-bs4
+pip3 install ics
 ```
 
 ### On Arch Linux
 ```bash
 sudo pacman -S python-telegram-bot python-beautifulsoup4
+## need install python module ics
 ```
 
 ## Installation
