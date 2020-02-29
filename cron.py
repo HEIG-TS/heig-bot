@@ -17,19 +17,18 @@
     You should have received a copy of the GNU General Public License
     along with heig-bot. If not, see <https://www.gnu.org/licenses/>.
 """
-import telegram.ext
-import sys
-import subprocess
-import json
 import os
+
 from heig.init import config
-from heig.user import User
+from heig.user import User, DIR_DB_PICKLE
 
-
-for i in os.scandir(config()["database_directory"]):
+for i in os.scandir(config()["database_directory"]+DIR_DB_PICKLE):
     id = i.name[:-7]
     user = User(id)
-    user.gaps().check_gaps_notes(id, auto=True)
+    try:
+        user.gaps().check_gaps_notes(id, auto=True)
+    except:
+        print("Error for "+id)
 
 #for id in config["logs_userid"]:
     #updater.bot.send_message(chat_id=id, text="Bonjour")
