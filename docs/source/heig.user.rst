@@ -6,5 +6,4 @@ heig.user
    :undoc-members:
    :private-members:
    :special-members:
-   :inherited-members:
 

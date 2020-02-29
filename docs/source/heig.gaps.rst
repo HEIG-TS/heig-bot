@@ -6,5 +6,4 @@ heig.gaps
    :undoc-members:
    :private-members:
    :special-members:
-   :inherited-members:
 

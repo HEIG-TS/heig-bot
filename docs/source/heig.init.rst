@@ -6,5 +6,4 @@ heig.init
    :undoc-members:
    :private-members:
    :special-members:
-   :inherited-members:
 
