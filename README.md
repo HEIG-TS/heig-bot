@@ -28,6 +28,10 @@ apt install python3-dask-sphinx-theme python3-sphinx
 ```shell script
 apt install python3-python-telegram-bot python3-bs4
 pip3 install ics
+
+# if you need generate documentation
+apt install python3-dask-sphinx-theme python3-sphinx
+
 ```
 
 ### On Arch Linux
@@ -36,7 +40,7 @@ sudo pacman -S python-telegram-bot python-beautifulsoup4
 pip3 install ics
 
 # if you need generate documentation
-pip3 install ics module dask-sphinx-theme module sphinx
+pip3 install dask-sphinx-theme sphinx
 ```
 
 ## Installation
