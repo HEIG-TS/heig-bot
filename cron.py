@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 """
-    Copyright 2019 Gabriel Roch
+    Copyright 2019,2020 Gabriel Roch
 
     This file is part of heig-bot.
 
@@ -26,7 +26,7 @@ from heig.init import config
 from heig.user import User
 
 
-for i in os.scandir(config["database_directory"]):
+for i in os.scandir(config()["database_directory"]):
     id = i.name[:-7]
     user = User(id)
     user.gaps().check_gaps_notes(id, auto=True)

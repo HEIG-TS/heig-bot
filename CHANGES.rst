@@ -1,7 +1,7 @@
 ChangeLog
 =========
 
-0.3 (unreleased)
+0.4 (unreleased)
 ----------------
 
 Breaking changes:
@@ -10,7 +10,7 @@ Breaking changes:
 
 New features:
 
-- *add item here*
+- Add documentation on readthedocs
 
 Bug fixes:
 

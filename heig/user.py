@@ -1,5 +1,5 @@
 """
-    Copyright 2019 Gabriel Roch
+    Copyright 2019,2020 Gabriel Roch
 
     This file is part of heig-bot.
 
@@ -51,7 +51,7 @@ class User:
             :type user_id: 
         """
         self._user_id = user_id
-        self._filename = config["database_directory"]+DIR_DB_PICKLE+str(self._user_id)+".pickle"
+        self._filename = config()["database_directory"]+DIR_DB_PICKLE+str(self._user_id)+".pickle"
         if(os.path.isfile(self._filename)):
             file = open(self._filename, 'rb')
             self._data = pickle.load(file);
@@ -68,7 +68,7 @@ class User:
         """
             Save user's data on disk
         """
-        os.makedirs(config["database_directory"]+DIR_DB_PICKLE, exist_ok=True)
+        os.makedirs(config()["database_directory"]+DIR_DB_PICKLE, exist_ok=True)
         file = open(self._filename, 'wb')
         pickle.dump(self._data, file)
 
@@ -88,9 +88,9 @@ class User:
             
             :rtype: bool
         """
-        return str(self._user_id) in config["admins_userid"] or self._user_id in config["admins_userid"]
+        return str(self._user_id) in config()["admins_userid"] or self._user_id in config()["admins_userid"]
 
-    def send_message(self, message, prefix="", suffix="", reply_to=0, context=updater, chat_id=0, parse_mode=None):
+    def send_message(self, message, prefix="", suffix="", reply_to=0, context=None, chat_id=0, parse_mode=None):
         """
             Send a message to user
 
@@ -115,6 +115,8 @@ class User:
             :param parse_mode: Format of message (Markdown or HTML)
             :type parse_mode: str
         """
+        if context == None:
+            context = updater()
         if chat_id == 0:
             chat_id = self._user_id
         text = ""
