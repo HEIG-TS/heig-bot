@@ -68,7 +68,7 @@ class User:
         """
             Save user's data on disk
         """
-        os.mkdir(config["database_directory"]+DIR_DB_PICKLE)
+        os.makedirs(config["database_directory"]+DIR_DB_PICKLE, exist_ok=True)
         file = open(self._filename, 'wb')
         pickle.dump(self._data, file)
 

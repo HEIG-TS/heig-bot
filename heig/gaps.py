@@ -21,18 +21,23 @@
     Parsing of notes is inspired/copied by https://gitlab.theswissbay.ch/heig/hidapo
 """
 
-import re
-import subprocess
 import json
-import requests
-import copy
-from bs4 import BeautifulSoup
+import os.path
+import re
 from datetime import date
+
+import arrow
+import requests
+from bs4 import BeautifulSoup
+from ics import Calendar
 
 URL_BASE = "https://gaps.heig-vd.ch/"
 URL_CONSULTATION_NOTES = URL_BASE+"/consultation/controlescontinus/consultation.php"
 URL_ATTENDANCE = URL_BASE+"/consultation/etudiant/"
 URL_TIMETABLE = URL_BASE+"/consultation/horaires/"
+
+DIR_DB_GAPS = "/heig.gaps/"
+DIR_DB_TIMETABLE = "/heig.gaps.timetable/"
 
 class GapsError(Exception):
     """
@@ -49,6 +54,7 @@ class Gaps:
 
         :ivar _data: GAPS information
             _data["notes"][2020]["ANA"] = GradeCourse
+            _data["gapsid"] = id for GAPS
         :vartype _data: User
     """
 
@@ -69,6 +75,64 @@ class Gaps:
             Indicate if we have credentials for GAPS
         """
         return "gapsid" in self._data
+
+    def get_timetable_ics(self, year, trimester, id, type, force=False):
+        """
+            Get ICS file.
+            File in cache is used if possible.
+
+            :param year: Year of timetable
+            :type year: int
+
+            :param trimester: Trimester of timetable
+            :type trimester: int
+
+            :param id: id of entity
+            :type id: int
+
+            :param type: type of entity
+            :type type: int
+
+            :param force: Force download and update cache
+            :type force: bool
+        """
+        from heig.init import config
+        dirname = config["database_directory"]+DIR_DB_TIMETABLE+"/"+str(year)+"/"+str(trimester)+"/"+str(type)
+        filename = dirname+"/"+str(id)+".ics"
+        download = force or not os.path.isfile(filename)
+        os.makedirs(dirname, exist_ok=True)
+        if download:
+            ics = requests.get(
+                    URL_TIMETABLE,
+                    auth=(self._data['username'], self._data['password']),
+                    params={'annee':year,'trimestre':trimester, 'type':type, 'id':id, 'icalendarversion':2}
+                ).text
+            file = open(filename, "w")
+            file.write(ics)
+            file.close()
+        else:
+            file = open(filename, "r")
+            ics = file.read()
+            file.close();
+        return ics
+
+    def get_day_lesson(self, dt: arrow.Arrow = arrow.now(), text: bool = False):
+        """
+
+        :param dt: Date for show lesson
+        :param text: Return type is text
+        """
+        c = Calendar(self.get_timetable_ics(2019, 3, self._data["gapsid"], 2))
+        if text:
+            ret = dt.format('*dddd D MMMM YYYY*\n', locale="fr")
+            for i in c.timeline.on(dt):
+                ret += "`" \
+                       + i.begin.to('Europe/Paris').format('HH:mm') \
+                       + " → " + i.end.to('Europe/Paris').format('HH:mm') \
+                       + "` : *" + str(i.name) + "*\n"
+            return ret
+        else:
+            return c.timeline.on(dt)
 
     def set_credentials(self, username, password):
         """
@@ -266,16 +330,16 @@ class Gaps:
                 if i not in newnotes:
                     newnotes[i] = oldnotes[i]
                     self.send_notes_course(year, i, chat_id, notes=newnotes[i], prefix="Suppression\n")
-                    sended = True 
+                    sended = True
                 elif i not in oldnotes:
                     self.send_notes_course(year, i, chat_id, notes=newnotes[i], prefix="Ajout\n")
-                    sended = True 
+                    sended = True
                 elif oldnotes[i] == newnotes[i]:
                     pass
                 else:
                     self.send_notes_course(year, i, chat_id, notes=oldnotes[i], prefix="Ancien\n")
                     self.send_notes_course(year, i, chat_id, notes=newnotes[i], prefix="Nouveau\n")
-                    sended = True 
+                    sended = True
 
         if not sended and not auto:
             self._user.send_message("No update", chat_id=chat_id)

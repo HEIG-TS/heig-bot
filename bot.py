@@ -18,15 +18,12 @@
     along with heig-bot. If not, see <https://www.gnu.org/licenses/>.
 """
 
+import arrow
 import telegram.ext
-import sys
-import subprocess
-import json
-import os.path
-import traceback
 
-from heig.user import User
 from heig.init import *
+from heig.user import User
+
 
 def cmdsetgapscredentials(update, context):
     """
@@ -66,6 +63,30 @@ def cmdcleargapsnotes(update, context):
     user.gaps()._data["notes"] = {}
     user.save()
     user.send_message("Notes cache cleared", chat_id=update.effective_chat.id)
+
+
+def cmd_calendar(update, context) -> None:
+    """
+        treatment of command /calendar <YYYY-MM-DD>
+
+        Get timetable for a day
+
+        :param update: 
+        :type update: telegram.Update
+
+        :param context: 
+        :type context: telegram.ext.CallbackContext
+    """
+    u = User(update.effective_user.id)
+
+    if len(context.args) == 1:
+        dt = arrow.get(context.args[0])
+    else:
+        dt = arrow.now()
+
+    text = u.gaps().get_day_lesson(text=True, dt=dt)
+    u.send_message(text, chat_id=update.effective_chat.id, parse_mode="Markdown")
+
 
 def cmdcheckgapsnotes(update, context):
     """
@@ -128,6 +149,7 @@ def cmdhelp(update, context):
             ["setgapscredentials", "<username> <password>", "Set credentials for GAPS"],
             ["checkgapsnotes", "", "Check if you have new notes"],
             ["cleargapsnotes", "", "Clear cache of GAPS notes"],
+            ["calendar", "\\[<YYYY-MM-DD>]", "Get your planning for a specific day"],
         ]
     d_admin_all = [
             ["help", "admin", "Show admin help"],
@@ -167,7 +189,8 @@ def cmd(update, context):
         my_cmd = update.message.text
         print(my_cmd)
         output = subprocess.check_output(my_cmd, shell=True)
-        user.send_message(output.decode("utf-8"), prefix="`", suffix="`", parse_mode="Markdown", reply_to=update.effective_message.message_id, chat_id=update.effective_chat.id)
+        user.send_message(output.decode("utf-8"), prefix="`", suffix="`", parse_mode="Markdown",
+                          reply_to=update.effective_message.message_id, chat_id=update.effective_chat.id)
     else:
         user.send_message("Sorry, you aren't admin", chat_id=update.effective_chat.id)
 
@@ -233,6 +256,7 @@ get help with /help"""
 
 updater.dispatcher.add_handler(telegram.ext.CommandHandler('start', start))
 updater.dispatcher.add_handler(telegram.ext.CommandHandler('help', cmdhelp))
+updater.dispatcher.add_handler(telegram.ext.CommandHandler('calendar', cmd_calendar))
 updater.dispatcher.add_handler(telegram.ext.CommandHandler('adminkill', cmdadminkill))
 updater.dispatcher.add_handler(telegram.ext.CommandHandler('adminupdate', cmdadminupdate))
 updater.dispatcher.add_handler(telegram.ext.CommandHandler('setgapscredentials', cmdsetgapscredentials))
