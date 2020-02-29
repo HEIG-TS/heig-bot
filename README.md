@@ -1,4 +1,6 @@
 # HEIG bot
+[![Documentation Status](https://readthedocs.org/projects/heig-bot/badge/?version=stable)](https://heig-bot.readthedocs.io/en/stable/?badge=stable)
+
 Telegram bot for check gradle in GAPS (HEIG-VD's platform for gradle).
 This can also check regulary if a user have new gradle and send message if.
 
