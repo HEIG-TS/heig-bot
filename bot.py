@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 """
-    Copyright 2019 Gabriel Roch
+    Copyright 2019,2020 Gabriel Roch
 
     This file is part of heig-bot.
 
@@ -254,20 +254,20 @@ get help with /help"""
     user.send_message(text, chat_id=update.effective_chat.id)
 
 
-updater.dispatcher.add_handler(telegram.ext.CommandHandler('start', start))
-updater.dispatcher.add_handler(telegram.ext.CommandHandler('help', cmdhelp))
-updater.dispatcher.add_handler(telegram.ext.CommandHandler('calendar', cmd_calendar))
-updater.dispatcher.add_handler(telegram.ext.CommandHandler('adminkill', cmdadminkill))
-updater.dispatcher.add_handler(telegram.ext.CommandHandler('adminupdate', cmdadminupdate))
-updater.dispatcher.add_handler(telegram.ext.CommandHandler('setgapscredentials', cmdsetgapscredentials))
-updater.dispatcher.add_handler(telegram.ext.CommandHandler('getgapsnotes', cmdgetgapsnotes))
-updater.dispatcher.add_handler(telegram.ext.CommandHandler('cleargapsnotes', cmdcleargapsnotes))
-updater.dispatcher.add_handler(telegram.ext.CommandHandler('checkgapsnotes', cmdcheckgapsnotes))
+updater().dispatcher.add_handler(telegram.ext.CommandHandler('start', start))
+updater().dispatcher.add_handler(telegram.ext.CommandHandler('help', cmdhelp))
+updater().dispatcher.add_handler(telegram.ext.CommandHandler('calendar', cmd_calendar))
+updater().dispatcher.add_handler(telegram.ext.CommandHandler('adminkill', cmdadminkill))
+updater().dispatcher.add_handler(telegram.ext.CommandHandler('adminupdate', cmdadminupdate))
+updater().dispatcher.add_handler(telegram.ext.CommandHandler('setgapscredentials', cmdsetgapscredentials))
+updater().dispatcher.add_handler(telegram.ext.CommandHandler('getgapsnotes', cmdgetgapsnotes))
+updater().dispatcher.add_handler(telegram.ext.CommandHandler('cleargapsnotes', cmdcleargapsnotes))
+updater().dispatcher.add_handler(telegram.ext.CommandHandler('checkgapsnotes', cmdcheckgapsnotes))
 
 # Need to be after CommandHandler for non-admin user
-updater.dispatcher.add_handler(telegram.ext.MessageHandler(telegram.ext.Filters.text, cmd))
+updater().dispatcher.add_handler(telegram.ext.MessageHandler(telegram.ext.Filters.text, cmd))
 
-for id in config["logs_userid"]:
+for id in config()["logs_userid"]:
     user = User(id)
     user.send_message("Bot starting")
-updater.start_polling()
+updater().start_polling()

@@ -1,5 +1,5 @@
 """
-    Copyright 2019 Gabriel Roch
+    Copyright 2019,2020 Gabriel Roch
 
     This file is part of heig-bot.
 
@@ -97,7 +97,7 @@ class Gaps:
             :type force: bool
         """
         from heig.init import config
-        dirname = config["database_directory"]+DIR_DB_TIMETABLE+"/"+str(year)+"/"+str(trimester)+"/"+str(type)
+        dirname = config()["database_directory"]+DIR_DB_TIMETABLE+"/"+str(year)+"/"+str(trimester)+"/"+str(type)
         filename = dirname+"/"+str(id)+".ics"
         download = force or not os.path.isfile(filename)
         os.makedirs(dirname, exist_ok=True)

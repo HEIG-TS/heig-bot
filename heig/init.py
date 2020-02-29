@@ -1,5 +1,5 @@
 """
-    Copyright 2019 Gabriel Roch
+    Copyright 2019,2020 Gabriel Roch
 
     This file is part of heig-bot.
 
@@ -16,14 +16,14 @@
     You should have received a copy of the GNU General Public License
     along with heig-bot. If not, see <https://www.gnu.org/licenses/>.
 """
-import telegram.ext
-import logging
-import subprocess
 import json
+import logging
 import sys
-import os.path
-import re
+
+import telegram.ext
+
 from heig.gaps import GapsError
+
 
 def onerror(update, context):
     try:
@@ -40,13 +40,20 @@ sys.setrecursionlimit(10000)
 #if len(sys.argv) == 2:
 #    config = json.load(open(sys.argv[1], 'r'))
 #else:
-config = json.load(open("config.json", 'r'))
+def config():
+    if not hasattr(config, "data"):
+        config.data = json.load(open("config.json", 'r'))
+    return config.data
 
-updater = telegram.ext.Updater(token=config["bot_token"], use_context=True)
-# dispatcher = updater.dispatcher
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+def updater():
+    if not hasattr(updater, "data"):
+        updater.data = telegram.ext.Updater(token=config()["bot_token"], use_context=True)
+        logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                      level=logging.INFO)
-updater.dispatcher.add_error_handler(onerror)
+        updater.data.dispatcher.add_error_handler(onerror)
+    return updater.data
+
+# dispatcher = updater.dispatcher
 
 def saveconfig(c): 
     """

@@ -11,27 +11,35 @@ This can also check regulary if a user have new gradle and send message if.
  - python-telegram-bot
  - beautifulsoup4
  - ics
+ - dask-sphinx-theme (for generate documentation) 
+ - sphinx (for generate documentation)
 
 ### On Debian buster and earlier
-```bash
+```shell script
 pip3 install python-telegram-bot beautifulsoup4 ics
+
+# if you need generate documentation
+apt install python3-dask-sphinx-theme python3-sphinx
 ```
 
 ### On Debian bullseye/sid
-```bash
+```shell script
 apt install python3-python-telegram-bot python3-bs4
 pip3 install ics
 ```
 
 ### On Arch Linux
-```bash
+```shell script
 sudo pacman -S python-telegram-bot python-beautifulsoup4
 pip3 install ics
+
+# if you need generate documentation
+pip3 install ics module dask-sphinx-theme module sphinx
 ```
 
 ## Installation
 
-```bash
+```shell script
 cd /opt/
 git clone https://github.com/g-roch/heig-bot.git -b stable
 cp heig-bot/config.json.sample heig-bot/config.json
@@ -57,7 +65,7 @@ and `logs_userid` in `config.json`, for empty array.
 
 ### Start bot
 
-```bash
+```shell script
 cd /opt/heig-bot && ./bot.py
 ```
 
@@ -66,4 +74,13 @@ cd /opt/heig-bot && ./bot.py
 add to cron :
 ```cron
 */5 * * * * cd /opt/heig-bot && ./cron.py
+```
+
+### Generate docs
+
+Install deps for generate docs (see above).
+
+```shell script
+cd docs
+make html
 ```
