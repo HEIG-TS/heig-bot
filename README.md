@@ -26,7 +26,7 @@ pip3 install ics
 ### On Arch Linux
 ```bash
 sudo pacman -S python-telegram-bot python-beautifulsoup4
-## need install python module ics
+pip3 install ics
 ```
 
 ## Installation
