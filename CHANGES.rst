@@ -4,6 +4,21 @@ ChangeLog
 0.3 (unreleased)
 ----------------
 
+Breaking changes:
+
+- *add item here*
+
+New features:
+
+- *add item here*
+
+Bug fixes:
+
+- *add item here*
+
+0.3 (2020-02-29)
+----------------
+
 **For update**:
 
 - Need re-create pickle user-database, format has changed
@@ -21,7 +36,8 @@ New features:
 
 Bug fixes:
 
-- *add item here*
+- #2 Timetable access
+- #3 Update doc /admin*
 
 0.2 (2020-02-20)
 ----------------
