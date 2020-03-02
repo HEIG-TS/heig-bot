@@ -196,7 +196,7 @@ class Gaps:
                 if current_course is not None:
                     courses[current_course.name] = current_course
                 r = re.match(
-                        "(?P<mat>[^ ]+) - moyenne hors examen : (?P<moy>[0-9.]+|-)",
+                        "(?P<mat>[^ ]+) - moyenne( hors examen)? : (?P<moy>[0-9.]+|-)",
                         row.contents[0].contents[0]
                     )
                 current_course = GradeCourse(
