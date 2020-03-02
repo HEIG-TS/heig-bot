@@ -74,7 +74,7 @@ class Gaps:
         """
             Indicate if we have credentials for GAPS
         """
-        return "gapsid" in self._data
+        return "gapsid" in self._data and "password" in self._data
 
     def get_timetable_ics(self, year, trimester, id, type, force=False):
         """
@@ -155,6 +155,10 @@ class Gaps:
             self._data["gapsid"] = text[text.find('idStudent = ') + 12:text.find('// default') - 2]
             self._user.save()
             return "Success (GAPS ID: "+str(self._data["gapsid"])+")"
+        
+    def unset_credentials(self):
+        del self._data["password"]
+        self._user.save()
 
     def get_notes_online(self, year):
         """

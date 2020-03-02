@@ -48,6 +48,28 @@ def cmdsetgapscredentials(update, context):
     context.bot.delete_message(update.effective_chat.id, update.effective_message.message_id)
     user.send_message("Your message is deleted for security", chat_id=update.effective_chat.id)
 
+
+def cmdunsetgapscredentials(update, context):
+    """
+        treatment of command /unsetgappscredentials
+
+        Delete user credentials for connexion to GAPS
+
+        :param update:
+        :type update: telegram.Update
+
+        :param context:
+        :type context: telegram.ext.CallbackContext
+    """
+    user = User(update.effective_user.id)
+    user.gaps().unset_credentials()
+    user = User(update.effective_user.id)
+    if user.gaps().is_registred():
+        user.send_message("Sorry, failed to delete credentials", chat_id=update.effective_chat.id)
+    else:
+        user.send_message("credentials deleted", chat_id=update.effective_chat.id)
+
+
 def cmdcleargapsnotes(update, context):
     """
         treatment of command /cleargapsnotes
@@ -148,6 +170,7 @@ def cmdhelp(update, context):
             ["help", "botcmd", "Show command list in format for BotFather"],
             ["getgapsnotes", "[<annee> [<cours> ...]]", "Show GAPS notes"],
             ["setgapscredentials", "<username> <password>", "Set credentials for GAPS"],
+            ["unsetgapscredentials", "", "Clear credentials for GAPS"],
             ["checkgapsnotes", "", "Check if you have new notes"],
             ["cleargapsnotes", "", "Clear cache of GAPS notes"],
             ["calendar", "\\[<YYYY-MM-DD>]", "Get your planning for a specific day"],
@@ -261,6 +284,7 @@ updater().dispatcher.add_handler(telegram.ext.CommandHandler('calendar', cmd_cal
 updater().dispatcher.add_handler(telegram.ext.CommandHandler('adminkill', cmdadminkill))
 updater().dispatcher.add_handler(telegram.ext.CommandHandler('adminupdate', cmdadminupdate))
 updater().dispatcher.add_handler(telegram.ext.CommandHandler('setgapscredentials', cmdsetgapscredentials))
+updater().dispatcher.add_handler(telegram.ext.CommandHandler('unsetgapscredentials', cmdunsetgapscredentials))
 updater().dispatcher.add_handler(telegram.ext.CommandHandler('getgapsnotes', cmdgetgapsnotes))
 updater().dispatcher.add_handler(telegram.ext.CommandHandler('cleargapsnotes', cmdcleargapsnotes))
 updater().dispatcher.add_handler(telegram.ext.CommandHandler('checkgapsnotes', cmdcheckgapsnotes))
