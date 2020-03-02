@@ -102,6 +102,8 @@ class Gaps:
         download = force or not os.path.isfile(filename)
         os.makedirs(dirname, exist_ok=True)
         if download:
+            if not self.is_registred():
+                raise GapsError("You are not registred")
             ics = requests.get(
                     URL_TIMETABLE,
                     auth=(self._data['username'], self._data['password']),

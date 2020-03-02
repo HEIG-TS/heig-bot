@@ -20,6 +20,7 @@
 
 import arrow
 import telegram.ext
+import subprocess
 
 from heig.init import *
 from heig.user import User
