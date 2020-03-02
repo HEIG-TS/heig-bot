@@ -203,8 +203,8 @@ def cmdhelp(update, context):
                 text = textnew
             else:
                 text += textnew
-    text += "\n\nYour telegram id is `"+str(update.effective_user.id)+"`\n"
-    text += "Your chat id is `"+str(update.effective_chat.id)+"`\n"
+        text += "\n\nYour telegram id is `"+str(update.effective_user.id)+"`\n"
+        text += "Your chat id is `"+str(update.effective_chat.id)+"`\n"
     user.send_message(text, chat_id=update.effective_chat.id, parse_mode="Markdown")
 
 def cmd(update, context):
