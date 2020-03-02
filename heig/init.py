@@ -31,7 +31,7 @@ def onerror(update, context):
     except GapsError as error:
         context.bot.send_message(chat_id=update.effective_chat.id, text="Error : "+str(error))
     except:
-        context.bot.send_message(chat_id=update.effective_chat.id, text="Unknow error !, see the console for more details ")
+        context.bot.send_message(chat_id=update.effective_chat.id, text="Unknow error! See the console for more details.")
         print(str(context.error))
 
 

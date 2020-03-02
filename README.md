@@ -36,11 +36,12 @@ apt install python3-dask-sphinx-theme python3-sphinx
 
 ### On Arch Linux
 ```shell script
-sudo pacman -S python-telegram-bot python-beautifulsoup4
-pip3 install ics
+sudo pacman -S python-pip python-telegram-bot python-beautifulsoup4
+sudo pip install ics
 
 # if you need generate documentation
-pip3 install dask-sphinx-theme sphinx
+sudo pacman -S python-sphinx
+sudo pip install dask-sphinx-theme
 ```
 
 ## Installation
@@ -55,11 +56,11 @@ mkdir -p /var/heig-bot/ # set right for script can write
 ### Create bot
 
 You need create a telegram bot with BotFather, and copy
-the bot key in `config.json`. (value of `bot_tocken`)
+the bot key in `config.json`. (value of `bot_token`)
 
 ### Admin/Logs configuration 
 
-heig-bot can have admin, you can copy telegram userid (it's a number)
+heig-bot can have admins, you can copy telegram userid (it's a number)
 to `config.json` in `admins_userid`.
 
 heig-bot can send a message when he start, you can copy telegram userid 
