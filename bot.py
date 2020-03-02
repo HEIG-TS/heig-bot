@@ -45,7 +45,7 @@ def cmdsetgapscredentials(update, context):
     else:
         user.send_message("Usage : /setgapscredentials username password", chat_id=update.effective_chat.id)
     context.bot.delete_message(update.effective_chat.id, update.effective_message.message_id)
-    user.send_message("Your message is deleted for security", chat_id=update.effective_chat.id)
+    user.send_message("Your message has been deleted for security", chat_id=update.effective_chat.id)
 
 def cmdcleargapsnotes(update, context):
     """
@@ -127,7 +127,7 @@ def cmdgetgapsnotes(update, context):
         courses = context.args[1:]
         user.gaps().send_notes(year, courses, update.effective_chat.id)
     else:
-        user.send_message( "Usage : /getgapsnotes [<annee> [<cours> ...]]", chat_id=update.effective_chat.id)
+        user.send_message( "Usage : /getgapsnotes [<year> [<course> ...]]", chat_id=update.effective_chat.id)
         user.gaps().send_notes_all(update.effective_chat.id)
 
 def cmdhelp(update, context):
@@ -247,7 +247,7 @@ def start(update, context):
         :type context: telegram.ext.CallbackContext
     """
     user = User(update.effective_user.id)
-    text = """Welcom on a unofficial HEIG bot
+    text = """Welcome to the unofficial HEIG bot
 set your GAPS credentials with :  
 /setgapscredentials <username> <password> 
 get help with /help"""
