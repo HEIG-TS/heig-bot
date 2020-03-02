@@ -41,7 +41,7 @@ sudo pip install ics
 
 # if you need generate documentation
 sudo pacman -S python-sphinx
-sudo pip install dask-sphinx-theme
+sudo pip install sphinx_rtd_theme
 ```
 
 ## Installation
