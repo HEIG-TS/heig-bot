@@ -130,8 +130,8 @@ class Gaps:
             for i in c.timeline.on(dt):
                 ret += "`" \
                        + i.begin.to('Europe/Paris').format('HH:mm') \
-                       + " → " + i.end.to('Europe/Paris').format('HH:mm') \
-                       + "` : *" + str(i.name) + "*\n"
+                       + "→" + i.end.to('Europe/Paris').format('HH:mm') \
+                       + "`: *" + i.location + "*: " + str(i.name) + "\n"
             return ret
         else:
             return c.timeline.on(dt)
