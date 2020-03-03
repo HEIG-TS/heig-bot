@@ -1,6 +1,22 @@
 ChangeLog
 =========
 
+0.3.3 (unreleased)
+------------------
+
+Breaking changes:
+
+- *add item here*
+
+New features:
+
+- *add item here*
+
+Bug fixes:
+
+- *add item here*
+
+
 0.3.2 (2020-03-03)
 ------------------
 
@@ -12,7 +28,7 @@ New features:
 Bug fixes:
 
 - #21 Parsing course without exam
-- #20 Hide telegrame id on `/help botcmd`
+- #20 Hide telegram id on `/help botcmd`
 - #10 Display good error message when `/calendar` without cache and 
   without credentials
 
