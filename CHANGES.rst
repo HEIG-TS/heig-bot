@@ -1,20 +1,20 @@
 ChangeLog
 =========
 
-0.4 (unreleased)
-----------------
-
-Breaking changes:
-
-- *add item here*
+0.3.2 (2020-03-03)
+------------------
 
 New features:
 
 - Add documentation on readthedocs
+- #12 `/unsetgapscredentials` remove password on user file
 
 Bug fixes:
 
-- *add item here*
+- #21 Parsing course without exam
+- #20 Hide telegrame id on `/help botcmd`
+- #10 Display good error message when `/calendar` without cache and 
+  without credentials
 
 0.3 (2020-02-29)
 ----------------
