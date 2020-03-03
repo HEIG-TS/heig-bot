@@ -21,7 +21,7 @@ This can also check regulary if a user have new gradle and send message if.
 pip3 install python-telegram-bot beautifulsoup4 ics
 
 # if you need generate documentation
-apt install python3-dask-sphinx-theme python3-sphinx
+apt install python3-sphinx-rtd-theme python3-sphinx
 ```
 
 ### On Debian bullseye/sid
@@ -30,7 +30,7 @@ apt install python3-python-telegram-bot python3-bs4
 pip3 install ics
 
 # if you need generate documentation
-apt install python3-dask-sphinx-theme python3-sphinx
+apt install python3-sphinx-rtd-theme python3-sphinx
 
 ```
 
