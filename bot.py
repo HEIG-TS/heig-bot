@@ -186,6 +186,7 @@ def cmdhelp(update, context):
     text = ""
     if len(context.args) == 1 and context.args[0] == "botcmd":
         ttt = []
+        d.sort()
         for cmd in d:
             if not cmd[0] in ttt:
                 text += "" + cmd[0] + " - " + cmd[2] + "\n"
@@ -196,6 +197,7 @@ def cmdhelp(update, context):
             d += d_admin_all + d_admin
         elif user.is_admin():
             d += d_admin_all
+        d.sort()
         for cmd in d:
             textnew = "\n/" + cmd[0] + " " + cmd[1] + " - " + cmd[2]
             if len(text) + len(textnew) >= telegram.constants.MAX_MESSAGE_LENGTH:
