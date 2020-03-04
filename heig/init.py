@@ -24,6 +24,22 @@ import telegram.ext
 
 from heig.gaps import GapsError
 
+BOT_VERSION_MAJOR = 0
+BOT_VERSION_MINOR = 3
+BOT_VERSION_REVISION = 2
+BOT_RELEASE = str(BOT_VERSION_MAJOR)+"."+str(BOT_VERSION_MINOR)
+BOT_VERSION = BOT_RELEASE+"."+str(BOT_VERSION_REVISION)
+
+COPYRIGHT_INFO = """Copyright 2019,2020 Gabriel Roch
+
+heig-bot is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+heig-bot is distributed in the hope that it will be useful, but *WITHOUT ANY WARRANTY*; without even the implied warranty of *MERCHANTABILITY* or *FITNESS FOR A PARTICULAR PURPOSE*.  See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with heig-bot. If not, see https://www.gnu.org/licenses/ .
+
+Code source of this software can be download at https://github.com/g-roch/heig-bot .
+"""
 
 def onerror(update, context):
     str_error = ""

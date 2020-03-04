@@ -88,16 +88,32 @@ def cmdcleargapsnotes(update, context):
     user.send_message("Notes cache cleared", chat_id=update.effective_chat.id)
 
 
+def cmd_version(update, context) -> None:
+    """
+        treatment of command /version
+
+        Show bot version and copyright information
+
+        :param update: 
+        :type update: telegram.Update
+
+        :param context: 
+        :type context: telegram.ext.CallbackContext
+    """
+    u = User(update.effective_user.id)
+    text = "HEIG-bot version "+BOT_RELEASE+"\n\n"+COPYRIGHT_INFO
+    u.send_message(text, chat_id=update.effective_chat.id, parse_mode="Markdown")
+
 def cmd_calendar(update, context) -> None:
     """
         treatment of command /calendar <YYYY-MM-DD>
 
         Get timetable for a day
 
-        :param update: 
+        :param update:
         :type update: telegram.Update
 
-        :param context: 
+        :param context:
         :type context: telegram.ext.CallbackContext
     """
     u = User(update.effective_user.id)
@@ -174,7 +190,8 @@ def cmdhelp(update, context):
             ["checkgapsnotes", "", "Check if you have new notes"],
             ["cleargapsnotes", "", "Clear cache of GAPS notes"],
             ["calendar", "\\[<YYYY-MM-DD>]", "Get your planning for a specific day"],
-        ]
+            ["version", "", "Show version and copyright information"],
+    ]
     d_admin_all = [
             ["help", "admin", "Show admin help"],
         ]
@@ -291,6 +308,7 @@ updater().dispatcher.add_handler(telegram.ext.CommandHandler('unsetgapscredentia
 updater().dispatcher.add_handler(telegram.ext.CommandHandler('getgapsnotes', cmdgetgapsnotes))
 updater().dispatcher.add_handler(telegram.ext.CommandHandler('cleargapsnotes', cmdcleargapsnotes))
 updater().dispatcher.add_handler(telegram.ext.CommandHandler('checkgapsnotes', cmdcheckgapsnotes))
+updater().dispatcher.add_handler(telegram.ext.CommandHandler('version', cmd_version))
 
 # Need to be after CommandHandler for non-admin user
 if config()["admin_exec"] == "on":
