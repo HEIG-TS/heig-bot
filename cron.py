@@ -26,10 +26,11 @@ for i in os.scandir(config()["database_directory"]+DIR_DB_PICKLE):
     id = i.name[:-7]
     user = User(id)
     try:
-        user.gaps().check_gaps_notes(id, auto=True)
+        if user.gaps().is_registred() and user.gaps().tracking("notes"):
+            user.gaps().check_gaps_notes(id, auto=True)
+        else:
+            user.debug("Auto sync notes ignored")
     except:
-        print("Error for "+id)
-
-#for id in config["logs_userid"]:
-    #updater.bot.send_message(chat_id=id, text="Bonjour")
+        user.debug("Auto sync notes ERROR")
+        print("["+id+"] Error")
 
