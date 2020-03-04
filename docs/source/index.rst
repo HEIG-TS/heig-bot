@@ -10,6 +10,7 @@ Welcome to HEIG-bot's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   config.py
    heig.gaps
    heig.user
    heig.init
