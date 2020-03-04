@@ -55,6 +55,7 @@ class Gaps:
         :ivar _data: GAPS information
             _data["notes"][2020]["ANA"] = GradeCourse
             _data["gapsid"] = id for GAPS
+            _data["tracking"]["notes"] = bool (true for notes tracking)
         :vartype _data: User
     """
 
@@ -69,6 +70,34 @@ class Gaps:
         if not "gaps" in self._user._data:
             self._user._data["gaps"] = {}
         self._data = self._user._data["gaps"]
+        
+    def tracking(self, type="notes") -> bool:
+        """
+            Indicate if tracking is enable
+            
+            :param type: Type of tracking (notes, ...)
+            :type type: str
+            :rtype: bool
+        """
+        if "tracking" in self._data and type in self._data["tracking"]:
+            return self._data["tracking"][type]
+        else:
+            return False
+    
+    def set_tracking(self, type, value) -> None:
+        """
+            Set tracking mode for type
+
+            :param type: Type of tracking (notes, ...)
+            :type type: str
+            :param value: True for enable tracking
+            :type value: bool
+            :rtype: None
+        """
+        if "tracking" not in self._data:
+            self._data["tracking"] = {}
+        self._data["tracking"][type] = value
+        self._user.save()
 
     def is_registred(self):
         """

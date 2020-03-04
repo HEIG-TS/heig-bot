@@ -87,6 +87,39 @@ def cmdcleargapsnotes(update, context):
     user.save()
     user.send_message("Notes cache cleared", chat_id=update.effective_chat.id)
 
+def cmd_tracking_gaps_notes(update, context) -> None:
+    """
+        treatment of command /trackinggapsnotes
+
+        Get tracking gaps note value
+
+        treatment of command /trackinggapsnotes <bool>
+
+        Set tracking gaps note value
+
+        :param update:
+        :type update: telegram.Update
+
+        :param context:
+        :type context: telegram.ext.CallbackContext
+    """
+    u = User(update.effective_user.id)
+    text = ""
+    
+    if len(context.args) == 1:
+        value = context.args[0] == "on" or \
+            context.args[0] == "1" or \
+            context.args[0] == "true" or \
+            context.args[0] == "True"
+        u.gaps().set_tracking(type="notes", value=value)
+    else:
+        text = "Usage: /trackinggapsnotes [on|1|true|True|off|0|false|False]\n\n"
+    if u.gaps().tracking("notes"):
+        text += "Tracking gaps notes is *enable*"
+    else:
+        text += "Tracking gaps notes is *disable*"
+    u.send_message(text, chat_id=update.effective_chat.id, parse_mode="Markdown")
+
 
 def cmd_version(update, context) -> None:
     """
@@ -207,6 +240,7 @@ def cmdhelp(update, context):
             ["calendar", "\\[<YYYY-MM-DD>]", "Get your planning for a specific day"],
             ["close", "", "Delete all information stocked by the bot"],
             ["version", "", "Show version and copyright information"],
+            ["trackinggapsnotes", "\\[<bool>]", "Enable/disable gaps notes"],
     ]
     d_admin_all = [
             ["help", "admin", "Show admin help"],
@@ -326,6 +360,7 @@ updater().dispatcher.add_handler(telegram.ext.CommandHandler('cleargapsnotes', c
 updater().dispatcher.add_handler(telegram.ext.CommandHandler('checkgapsnotes', cmdcheckgapsnotes))
 updater().dispatcher.add_handler(telegram.ext.CommandHandler('version', cmd_version))
 updater().dispatcher.add_handler(telegram.ext.CommandHandler('close', cmd_close))
+updater().dispatcher.add_handler(telegram.ext.CommandHandler('trackinggapsnotes', cmd_tracking_gaps_notes))
 
 # Need to be after CommandHandler for non-admin user
 if config()["admin_exec"] == "on":
