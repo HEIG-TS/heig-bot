@@ -1,11 +1,14 @@
 {
   "database_directory": "/var/heig-bot/",
   "bot_token": "<enter bot token here>",
-  "debug": "on",
+  "debug": 1,
   "admins_userid": [
     ""
   ],
   "logs_userid": [
     ""
+  ],
+  "debug_userid": [
+	  ""
   ]
 }

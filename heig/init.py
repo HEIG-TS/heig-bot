@@ -26,13 +26,23 @@ from heig.gaps import GapsError
 
 
 def onerror(update, context):
+    str_error = ""
     try:
         raise context.error
     except GapsError as error:
-        context.bot.send_message(chat_id=update.effective_chat.id, text="Error : "+str(error))
+        str_error = "Error : "+str(error)
     except:
-        context.bot.send_message(chat_id=update.effective_chat.id, text="Unknow error! See the console for more details.")
-        print(str(context.error))
+        str_error = "Unknow error! See the console for more details."
+    context.bot.send_message(chat_id=update.effective_chat.id, text=str_error)
+    str_debug = "["+str(update.effective_chat.id)+"] "+str(context.error)
+    if config()["debug"] >= 3:
+        updater().bot.send_message(chat_id=update.effective_chat.id, text="```\n" + str_debug + "\n```", parse_mode="Markdown")
+    if config()["debug"] >= 2:
+        for uid in config()["debug_userid"]:
+            if str(uid) != str(update.effective_chat.id):
+                updater().bot.send_message(chat_id=uid, text="```\n" + str_debug + "\n```", parse_mode="Markdown")
+    if config()["debug"] >= 1:
+        print(str_debug)
 
 
 sys.setrecursionlimit(10000)
@@ -55,7 +65,7 @@ def updater():
 
 # dispatcher = updater.dispatcher
 
-def saveconfig(c): 
+def saveconfig(c):
     """
     Save bot config c in config.json
     :param c: array to save

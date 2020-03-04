@@ -138,6 +138,11 @@ class User:
             :param text: Information to display
             :type text: str
         """
-        print("["+str(self.id()) + "] " + text)
+        debug_text = "["+str(self.id()) + "] " + text
+        if config()["debug_send"] >= 1:
+            print(debug_text)
+        if config()["debug_send"] >= 2:
+            for uid in config()["debug_userid"]:
+                updater().bot.send_message(chat_id=uid, text="```\n"+debug_text+"\n```", parse_mode="Markdown")
 
 
