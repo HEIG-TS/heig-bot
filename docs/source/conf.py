@@ -16,17 +16,19 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath('../..'))
 
+from heig.init import BOT_VERSION, BOT_RELEASE
+
 
 # -- Project information -----------------------------------------------------
 
 project = 'HEIG-bot'
-copyright = '2020, Gabriel Roch'
+copyright = '2019-2020, Gabriel Roch'
 author = 'Gabriel Roch'
 
 # The short X.Y version
-version = ''
+version = BOT_VERSION
 # The full version, including alpha/beta/rc tags
-release = '0.3.2'
+release = BOT_RELEASE
 
 
 # -- General configuration ---------------------------------------------------
