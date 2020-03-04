@@ -19,6 +19,11 @@ config.json
 - **debug_send**:
     Level of debug for send message. Value between 0
     and 2, with same meaning of `debug`
+- **admin_exec**:
+    Enable/disable shell exec command for admins
+
+    - **off**: exec command is disable
+    - **on**: exec command is enable
 - **admins_userid**:
     String list of user telegram id for
     administrators

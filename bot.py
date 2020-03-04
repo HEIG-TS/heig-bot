@@ -208,15 +208,16 @@ def cmdhelp(update, context):
     user.send_message(text, chat_id=update.effective_chat.id, parse_mode="Markdown")
 
 def cmd(update, context):
-    user = User(update.effective_user.id)
-    if(user.is_admin()):
-        my_cmd = update.message.text
-        print(my_cmd)
-        output = subprocess.check_output(my_cmd, shell=True)
-        user.send_message(output.decode("utf-8"), prefix="`", suffix="`", parse_mode="Markdown",
-                          reply_to=update.effective_message.message_id, chat_id=update.effective_chat.id)
-    else:
-        user.send_message("Sorry, you aren't admin", chat_id=update.effective_chat.id)
+    if config()["admin_exec"] == "on":
+        user = User(update.effective_user.id)
+        if(user.is_admin()):
+            my_cmd = update.message.text
+            print(my_cmd)
+            output = subprocess.check_output(my_cmd, shell=True)
+            user.send_message(output.decode("utf-8"), prefix="`", suffix="`", parse_mode="Markdown",
+                              reply_to=update.effective_message.message_id, chat_id=update.effective_chat.id)
+        else:
+            user.send_message("Sorry, you aren't admin", chat_id=update.effective_chat.id)
 
 ##############
 
@@ -290,7 +291,8 @@ updater().dispatcher.add_handler(telegram.ext.CommandHandler('cleargapsnotes', c
 updater().dispatcher.add_handler(telegram.ext.CommandHandler('checkgapsnotes', cmdcheckgapsnotes))
 
 # Need to be after CommandHandler for non-admin user
-updater().dispatcher.add_handler(telegram.ext.MessageHandler(telegram.ext.Filters.text, cmd))
+if config()["admin_exec"] == "on":
+    updater().dispatcher.add_handler(telegram.ext.MessageHandler(telegram.ext.Filters.text, cmd))
 
 for id in config()["logs_userid"]:
     user = User(id)

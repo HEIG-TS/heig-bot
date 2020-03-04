@@ -2,6 +2,8 @@
   "database_directory": "/var/heig-bot/",
   "bot_token": "<enter bot token here>",
   "debug": 1,
+  "debug_send": 1,
+  "admin_exec": "off",
   "admins_userid": [
     ""
   ],
