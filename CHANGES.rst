@@ -6,7 +6,8 @@ ChangeLog
 
 Breaking changes:
 
-- *add item here*
+- `config.json` format are changed
+- `config.json` format are new entries
 
 New features:
 

@@ -95,7 +95,7 @@ class User:
             
             :rtype: bool
         """
-        return str(self._user_id) in config()["admins_userid"] or self._user_id in config()["admins_userid"]
+        return str(self._user_id) in config()["group"]["admin"] or self._user_id in config()["group"]["admin"]
 
     def send_message(self, message, prefix="", suffix="", reply_to=0, context=None, chat_id=0, parse_mode=None):
         """
@@ -149,7 +149,7 @@ class User:
         if config()["debug_send"] >= 1:
             print(debug_text)
         if config()["debug_send"] >= 2:
-            for uid in config()["debug_userid"]:
+            for uid in config()["group"]["debug"]:
                 updater().bot.send_message(chat_id=uid, text="```\n"+debug_text+"\n```", parse_mode="Markdown")
 
 

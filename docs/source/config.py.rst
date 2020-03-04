@@ -14,7 +14,7 @@ config.json
 
     - **0**: no debug
     - **1**: debug on console only
-    - **2**: debug on console and send to `debug_userid`
+    - **2**: debug on console and send to `group/debug`
     - **3**: same as **2** and send to user.
 - **debug_send**:
     Level of debug for send message. Value between 0
@@ -24,12 +24,14 @@ config.json
 
     - **off**: exec command is disable
     - **on**: exec command is enable
-- **admins_userid**:
+- **group**:
+    Is a map of group name and id list.
+- **group/admin**:
     String list of user telegram id for
     administrators
-- **logs_userid**:
+- **group/log**:
     String list of chat telegram id for
     logging (start message)
-- **debug_userid**:
+- **group/debug**:
     String list of chat telegram id for
     debug

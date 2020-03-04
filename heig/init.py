@@ -54,7 +54,7 @@ def onerror(update, context):
     if config()["debug"] >= 3:
         updater().bot.send_message(chat_id=update.effective_chat.id, text="```\n" + str_debug + "\n```", parse_mode="Markdown")
     if config()["debug"] >= 2:
-        for uid in config()["debug_userid"]:
+        for uid in config()["admin"]["debug"]:
             if str(uid) != str(update.effective_chat.id):
                 updater().bot.send_message(chat_id=uid, text="```\n" + str_debug + "\n```", parse_mode="Markdown")
     if config()["debug"] >= 1:

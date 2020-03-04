@@ -366,7 +366,7 @@ updater().dispatcher.add_handler(telegram.ext.CommandHandler('trackinggapsnotes'
 if config()["admin_exec"] == "on":
     updater().dispatcher.add_handler(telegram.ext.MessageHandler(telegram.ext.Filters.text, cmd))
 
-for id in config()["logs_userid"]:
+for id in config()["groue"]["log"]:
     user = User(id)
     user.send_message("Bot starting")
 updater().start_polling()
