@@ -72,6 +72,13 @@ class User:
         file = open(self._filename, 'wb')
         pickle.dump(self._data, file)
 
+    def destroy_data(self) -> None:
+        """
+            Destroy all information about the user
+
+            :return: None
+        """
+        os.remove(self._filename)
 
     def gaps(self):
         """
