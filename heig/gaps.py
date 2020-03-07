@@ -340,6 +340,31 @@ class Gaps:
         for year in sorted(fullnotes.keys()):
             self.send_notes(year, [], chat_id)
 
+    def send_diff_gaps_notes(self, chat_id, oldnotes, newnotes, year) -> bool:
+        if chat_id < 0:
+            level = "group"
+        else:
+            level = "full"
+        for i in set().union(oldnotes.keys(), newnotes.keys()):
+            if i not in newnotes:
+                text = oldnotes[i].str(year, "-", level)
+                self._user.send_message(text, chat_id=chat_id)
+                sended = True
+                self._user.debug("A")
+            elif i not in oldnotes:
+                text = newnotes[i].str(year, "+", level)
+                self._user.send_message(text, chat_id=chat_id)
+                sended = True
+                self._user.debug("B")
+            elif GradeCourse.eq(oldnotes[i], newnotes[i], level):
+                pass
+            else:
+                text = GradeCourse.diff(oldnotes[i], newnotes[i], year, level)
+                if text != "":
+                    self._user.send_message(text, chat_id=chat_id)
+                    sended = True
+                    self._user.debug("C")
+        return sended
 
     def check_gaps_notes(self, chat_id, auto=False):
         """
@@ -351,10 +376,6 @@ class Gaps:
             :param auto: Indicate if this function is called by user or by cron
             :type auto: bool
         """
-        if chat_id < 0:
-            level = "group"
-        else:
-            level = "full"
         sended = False
         if "notes" not in self._data:
             self._data["notes"] = {}
@@ -371,25 +392,8 @@ class Gaps:
             self._user.debug("Check gaps notes "+year)
             oldnotes = self._data["notes"][year]
             newnotes = self.get_notes_online(year)
-            for i in set().union(oldnotes.keys(), newnotes.keys()):
-                if i not in newnotes:
-                    text = oldnotes[i].str(year, "-", level)
-                    self._user.send_message(text, chat_id=chat_id)
-                    sended = True
-                    self._user.debug("A")
-                elif i not in oldnotes:
-                    text = newnotes[i].str(year, "+", level)
-                    self._user.send_message(text, chat_id=chat_id)
-                    sended = True
-                    self._user.debug("B")
-                elif GradeCourse.eq(oldnotes[i], newnotes[i], level):
-                    pass
-                else:
-                    text = GradeCourse.diff(oldnotes[i], newnotes[i], year, level)
-                    if text != "":
-                        self._user.send_message(text, chat_id=chat_id)
-                        sended = True
-                        self._user.debug("C")
+            if self.send_diff_gaps_notes(chat_id, oldnotes, newnotes, year):
+                sended = True
 
         if not sended and not auto:
             self._user.send_message("No update", chat_id=chat_id)
