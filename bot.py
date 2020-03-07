@@ -138,7 +138,7 @@ def cmd_tracking_gaps_notes(update, context) -> None:
                 context.args[0] == "1" or \
                 context.args[0] == "true" or \
                 context.args[0] == "True"
-        u.gaps().set_tracking(type="notes", value=value)
+        u.gaps().set_tracking(type="notes", branch_list=value)
     else:
         text = "Usage: /trackinggapsnotes [on|1|true|True|off|0|false|False]\n\n"
     if u.gaps().tracking("notes"):

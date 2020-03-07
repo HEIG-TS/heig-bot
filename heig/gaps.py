@@ -118,6 +118,8 @@ class Gaps:
             user_id = self._user.id()
         if "tracking" not in self._data:
             self._data["tracking"] = {}
+        if type not in self._data["tracking"]:
+            self._data["tracking"][type] = {}
         self._data["tracking"][type][user_id] = branch_list
         self._user.save()
 
