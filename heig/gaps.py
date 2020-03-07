@@ -366,16 +366,19 @@ class Gaps:
                     self._user.debug("C")
         return sended
 
-    def check_gaps_notes(self, chat_id, auto=False):
+    def check_gaps_notes(self, chat_id=None):
         """
             Check update on GAPS
 
-            :param chat_id: send message to this chat id
+            :param chat_id: send message to this chat id (else send a private message)
             :type chat_id: int
 
-            :param auto: Indicate if this function is called by user or by cron
-            :type auto: bool
         """
+        if chat_id == None:
+            chat_id = self._user._user_id
+            auto = True
+        else:
+            auto = False
         sended = False
         if "notes" not in self._data:
             self._data["notes"] = {}
@@ -392,6 +395,7 @@ class Gaps:
             self._user.debug("Check gaps notes "+year)
             oldnotes = self._data["notes"][year]
             newnotes = self.get_notes_online(year)
+
             if self.send_diff_gaps_notes(chat_id, oldnotes, newnotes, year):
                 sended = True
 

@@ -27,7 +27,7 @@ for i in os.scandir(config()["database_directory"]+DIR_DB_PICKLE):
     user = User(id)
     try:
         if user.gaps().is_registred() and user.gaps().tracking("notes"):
-            user.gaps().check_gaps_notes(id, auto=True)
+            user.gaps().check_gaps_notes()
         else:
             user.debug("Auto sync notes ignored")
     except:
