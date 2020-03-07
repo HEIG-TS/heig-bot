@@ -373,6 +373,7 @@ class Gaps:
             self.send_notes(year, [], chat_id)
 
     def send_diff_gaps_notes(self, chat_id, oldnotes, newnotes, year, branches=None) -> bool:
+        chat_id = int(chat_id)
         if chat_id < 0:
             level = "group"
         else:
@@ -380,7 +381,8 @@ class Gaps:
         if branches == None:
             branches = set().union(oldnotes.keys(), newnotes.keys())
         else:
-            branches = set().intersection(branches, set().union(oldnotes.keys(), newnotes.keys()))
+            branches = set().union(oldnotes.keys(), newnotes.keys()).intersection(branches)
+        sended = False
         for i in branches:
             if i not in newnotes:
                 text = oldnotes[i].str(year, "-", level)
@@ -410,11 +412,11 @@ class Gaps:
             :type chat_id: int
 
         """
-        if not self.tracking("notes"):
-            return
         if chat_id == None:
+            chat_list = self.tracking_get_telegram_id()
             auto = True
         else:
+            chat_list = [chat_id]
             auto = False
         sended = False
         if "notes" not in self._data:
@@ -433,15 +435,16 @@ class Gaps:
             oldnotes = self._data["notes"][year]
             newnotes = self.get_notes_online(year)
 
-            if not auto or self.tracking("notes") == True:
-                if self.send_diff_gaps_notes(self._user._user_id, oldnotes, newnotes, year):
-                    sended = True
-            else:
-                if self.send_diff_gaps_notes(self._user._user_id, oldnotes, newnotes, year, self.tracking("notes")):
-                    sended = True
+            for chat_id in chat_list:
+                if self.tracking("notes", chat_id) == True:
+                    if self.send_diff_gaps_notes(chat_id, oldnotes, newnotes, year):
+                        sended = True
+                else:
+                    if self.send_diff_gaps_notes(chat_id, oldnotes, newnotes, year, self.tracking("notes", user_id=chat_id)):
+                        sended = True
 
         if not sended and not auto:
-            self._user.send_message("No update", chat_id=chat_id)
+            self._user.send_message("No update")
 
 
 class GradeCourse:
