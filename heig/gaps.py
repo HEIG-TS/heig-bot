@@ -363,12 +363,16 @@ class Gaps:
         for year in sorted(fullnotes.keys()):
             self.send_notes(year, [], chat_id)
 
-    def send_diff_gaps_notes(self, chat_id, oldnotes, newnotes, year) -> bool:
+    def send_diff_gaps_notes(self, chat_id, oldnotes, newnotes, year, branches=None) -> bool:
         if chat_id < 0:
             level = "group"
         else:
             level = "full"
-        for i in set().union(oldnotes.keys(), newnotes.keys()):
+        if branches == None:
+            branches = set().union(oldnotes.keys(), newnotes.keys())
+        else:
+            branches = set().intersection(branches, set().union(oldnotes.keys(), newnotes.keys()))
+        for i in branches:
             if i not in newnotes:
                 text = oldnotes[i].str(year, "-", level)
                 self._user.send_message(text, chat_id=chat_id)
@@ -397,8 +401,9 @@ class Gaps:
             :type chat_id: int
 
         """
+        if not self.tracking("notes"):
+            return
         if chat_id == None:
-            chat_id = self._user._user_id
             auto = True
         else:
             auto = False
@@ -419,8 +424,12 @@ class Gaps:
             oldnotes = self._data["notes"][year]
             newnotes = self.get_notes_online(year)
 
-            if self.send_diff_gaps_notes(chat_id, oldnotes, newnotes, year):
-                sended = True
+            if not auto or self.tracking("notes") == True:
+                if self.send_diff_gaps_notes(self._user._user_id, oldnotes, newnotes, year):
+                    sended = True
+            else:
+                if self.send_diff_gaps_notes(self._user._user_id, oldnotes, newnotes, year, self.tracking("notes")):
+                    sended = True
 
         if not sended and not auto:
             self._user.send_message("No update", chat_id=chat_id)
