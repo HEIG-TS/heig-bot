@@ -103,11 +103,12 @@ def cmd_showdata(update, context):
     """
     user = User(update.effective_user.id)
     d = copy.deepcopy(user._data)
-    for year in d["gaps"]["notes"].keys():
-        for branch in d["gaps"]["notes"][year].keys():
-            d["gaps"]["notes"][year][branch] = d["gaps"]["notes"][year][branch].serilizable()
-
-    d["gaps"]["password"] = "HIDDEN"
+    if "gaps" in d:
+        if "notes" in d["gaps"]:
+            for year in d["gaps"]["notes"].keys():
+                for branch in d["gaps"]["notes"][year].keys():
+                    d["gaps"]["notes"][year][branch] = d["gaps"]["notes"][year][branch].serilizable()
+        d["gaps"]["password"] = "HIDDEN"
     text = json.dumps(d, indent=1)
     user.send_message(text, prefix="```\n", suffix="```", parse_mode="Markdown")
 
