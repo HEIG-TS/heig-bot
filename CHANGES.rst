@@ -1,7 +1,23 @@
 ChangeLog
 =========
 
-0.3.3 (unreleased)
+0.x.x (unreleased)
+------------------
+
+Breaking changes:
+
+- *add item here*
+
+New features:
+
+- *add item here*
+
+Bug fixes:
+
+- *add item here*
+
+
+0.4.0 (2020-04-07)
 ------------------
 
 Breaking changes:
@@ -11,11 +27,15 @@ Breaking changes:
 
 New features:
 
-- *add item here*
+- config for enable/disable command exec
+- new command `/version` `/close` `/trackinggapsnotes` `/untrackinggapsnotes` and `/showdata`
+- GAPS tracking notes for specific branch
+- GAPS tracking notes on group
 
 Bug fixes:
 
-- *add item here*
+- #10 Display good error message when `/calendar` without cache and
+  without credentials
 
 
 0.3.2 (2020-03-03)
