@@ -114,13 +114,37 @@ def cmd_showdata(update, context):
 
 
 
+def cmd_untracking_gaps_notes(update, context) -> None:
+    """
+        treatment of command /untrackinggapsnotes
+
+        Disable tracking gaps note
+
+        :param update:
+        :type update: telegram.Update
+
+        :param context:
+        :type context: telegram.ext.CallbackContext
+    """
+    u = User(update.effective_user.id)
+    print("Z")
+    u.gaps().set_tracking(type="notes", branch_list=False)
+    print("A")
+    if u.gaps().tracking("notes"):
+        text = "Tracking gaps notes is *enable*"
+    else:
+        text = "Tracking gaps notes is *disable*"
+    print("B")
+    u.send_message(text, chat_id=update.effective_chat.id, parse_mode="Markdown")
+
 def cmd_tracking_gaps_notes(update, context) -> None:
     """
         treatment of command /trackinggapsnotes
 
         Get tracking gaps note value
 
-        treatment of command /trackinggapsnotes <bool>
+        treatment of command /trackinggapsnotes *
+        treatment of command /trackinggapsnotes [<branchname> ...]
 
         Set tracking gaps note value
 
@@ -133,14 +157,13 @@ def cmd_tracking_gaps_notes(update, context) -> None:
     u = User(update.effective_user.id)
     text = ""
 
-    if len(context.args) == 1:
-        value = context.args[0] == "on" or \
-                context.args[0] == "1" or \
-                context.args[0] == "true" or \
-                context.args[0] == "True"
-        u.gaps().set_tracking(type="notes", branch_list=value)
+    if len(context.args) == 1 and context.args[0] == "*":
+        u.gaps().set_tracking(type="notes", branch_list=True)
+    elif len(context.args) >= 1:
+        u.gaps().set_tracking(type="notes", branch_list=context.args)
     else:
-        text = "Usage: /trackinggapsnotes [on|1|true|True|off|0|false|False]\n\n"
+        text = "Usage: /trackinggapsnotes *\n"
+        text = "Usage: /trackinggapsnotes <branchname> ...\n\n"
     if u.gaps().tracking("notes"):
         text += "Tracking gaps notes is *enable*"
     else:
@@ -271,7 +294,9 @@ def cmdhelp(update, context):
         ["calendar", "\\[<YYYY-MM-DD>]", "Get your planning for a specific day"],
         ["close", "", "Delete all information stocked by the bot"],
         ["version", "", "Show version and copyright information"],
-        ["trackinggapsnotes", "\\[<bool>]", "Enable/disable gaps notes"],
+        ["trackinggapsnotes", "", "Show gaps notes tracking"],
+        ["trackinggapsnotes", "\*|<branchname> ...", "Enable gaps notes tracking"],
+        ["untrackinggapsnotes", "", "Disable gaps notes tracking"],
         ["showdata", "", "Show data saved about you"],
     ]
     d_admin_all = [
@@ -397,6 +422,7 @@ updater().dispatcher.add_handler(telegram.ext.CommandHandler('checkgapsnotes', c
 updater().dispatcher.add_handler(telegram.ext.CommandHandler('version', cmd_version))
 updater().dispatcher.add_handler(telegram.ext.CommandHandler('close', cmd_close))
 updater().dispatcher.add_handler(telegram.ext.CommandHandler('trackinggapsnotes', cmd_tracking_gaps_notes))
+updater().dispatcher.add_handler(telegram.ext.CommandHandler('untrackinggapsnotes', cmd_untracking_gaps_notes))
 updater().dispatcher.add_handler(telegram.ext.CommandHandler('showdata', cmd_showdata))
 
 # Need to be after CommandHandler for non-admin user

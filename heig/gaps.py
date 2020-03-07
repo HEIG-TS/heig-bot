@@ -87,7 +87,9 @@ class Gaps:
         """
         if user_id is None:
             user_id = self._user.id()
-        if "tracking" in self._data and type in self._data["tracking"]:
+        if "tracking" in self._data \
+                and type in self._data["tracking"] \
+                and user_id in self._data["tracking"][type]:
             return self._data["tracking"][type][user_id]
         else:
             return False
@@ -120,7 +122,12 @@ class Gaps:
             self._data["tracking"] = {}
         if type not in self._data["tracking"]:
             self._data["tracking"][type] = {}
-        self._data["tracking"][type][user_id] = branch_list
+        if branch_list == False:
+            if type in self._data["tracking"] \
+                and user_id in self._data["tracking"][type]:
+                del self._data["tracking"][type][user_id]
+        else:
+            self._data["tracking"][type][user_id] = branch_list
         self._user.save()
 
     def is_registred(self):
