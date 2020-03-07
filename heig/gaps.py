@@ -86,7 +86,7 @@ class Gaps:
             :rtype: bool | list of branch
         """
         if user_id is None:
-            user_id = self._user._user_id
+            user_id = self._user.id()
         if "tracking" in self._data and type in self._data["tracking"]:
             return self._data["tracking"][type][user_id]
         else:
@@ -115,7 +115,7 @@ class Gaps:
             :rtype: None
         """
         if user_id is None:
-            user_id = self._user._user_id
+            user_id = self._user.id()
         if "tracking" not in self._data:
             self._data["tracking"] = {}
         self._data["tracking"][type][user_id] = branch_list
