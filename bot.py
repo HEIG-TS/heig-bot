@@ -21,6 +21,8 @@
 import arrow
 import telegram.ext
 import subprocess
+import copy
+import json
 
 from heig.init import *
 from heig.user import User
@@ -86,6 +88,29 @@ def cmdcleargapsnotes(update, context):
     user.gaps()._data["notes"] = {}
     user.save()
     user.send_message("Notes cache cleared", chat_id=update.effective_chat.id)
+    
+def cmd_showdata(update, context):
+    """
+        treatment of command /showdata
+
+        Show all information about user
+
+        :param update: 
+        :type update: telegram.Update
+
+        :param context: 
+        :type context: telegram.ext.CallbackContext
+    """
+    user = User(update.effective_user.id)
+    d = copy.deepcopy(user._data)
+    for year in d["gaps"]["notes"].keys():
+        for branch in d["gaps"]["notes"][year].keys():
+            d["gaps"]["notes"][year][branch] = d["gaps"]["notes"][year][branch].serilizable()
+
+    d["gaps"]["password"] = "HIDDEN"
+    text = json.dumps(d, indent=1)
+    user.send_message(text, prefix="```\n", suffix="```", parse_mode="Markdown")
+
 
 
 def cmd_tracking_gaps_notes(update, context) -> None:
@@ -246,6 +271,7 @@ def cmdhelp(update, context):
         ["close", "", "Delete all information stocked by the bot"],
         ["version", "", "Show version and copyright information"],
         ["trackinggapsnotes", "\\[<bool>]", "Enable/disable gaps notes"],
+        ["showdata", "", "Show data saved about you"],
     ]
     d_admin_all = [
         ["help", "admin", "Show admin help"],
@@ -370,6 +396,7 @@ updater().dispatcher.add_handler(telegram.ext.CommandHandler('checkgapsnotes', c
 updater().dispatcher.add_handler(telegram.ext.CommandHandler('version', cmd_version))
 updater().dispatcher.add_handler(telegram.ext.CommandHandler('close', cmd_close))
 updater().dispatcher.add_handler(telegram.ext.CommandHandler('trackinggapsnotes', cmd_tracking_gaps_notes))
+updater().dispatcher.add_handler(telegram.ext.CommandHandler('showdata', cmd_showdata))
 
 # Need to be after CommandHandler for non-admin user
 if config()["admin_exec"] == "on":

@@ -465,6 +465,16 @@ class GradeCourse:
         self.average = average
         self.evals = {}
 
+    def serilizable(self):
+        evals = {}
+        for k in self.evals.keys():
+            evals[k] = self.evals[k].serilizable()
+        return {
+            "name": self.name,
+            "average": self.average,
+            "evals": evals
+        }
+
     @classmethod
     def diff(cls, a, b, year, level="full"):
         if cls.eq(a, b, level):
@@ -543,6 +553,16 @@ class GradeGroupEvaluation:
         self.average = average
         self.coeff = coeff
         self.evals = []
+        
+    def serilizable(self):
+        evals = [];
+        for i in self.evals:
+            evals.append(i.serilizable())
+        return {
+            "average": self.average,
+            "coeff": self.coeff,
+            "evals": evals
+        }
 
     @classmethod
     def diff(cls, a, b, typ, level="full"):
@@ -630,6 +650,9 @@ class GradeEvaluation:
         self.classaverage = classaverage
         self.grade = grade
         self.coeff = coeff
+        
+    def serilizable(self):
+        return self.grade + " " + self.coeff + "% (cls=" + self.classaverage+") " + self.date + " " + self.description
 
     @classmethod
     def diff(cls, a, b, level="full"):
