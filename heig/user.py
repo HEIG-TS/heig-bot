@@ -129,14 +129,24 @@ class User:
         text = ""
         for line in message.splitlines():
             if len(text) + len(line) + len(suffix) >= telegram.constants.MAX_MESSAGE_LENGTH:
-                context.bot.send_message(chat_id=chat_id, text=prefix+text+suffix, parse_mode=parse_mode, reply_to_message_id=reply_to)
+                context.bot.send_message(
+                    chat_id=chat_id,
+                    text=prefix+text+suffix,
+                    parse_mode=parse_mode,
+                    reply_to_message_id=reply_to
+                )
                 reply_to = 0
                 text = line
             else:
                 text += line + "\n"
         if not text == "":
             self.debug("SEND: "+(prefix+text+suffix).strip())
-            context.bot.send_message(chat_id=chat_id, text=prefix+text+suffix, parse_mode=parse_mode, reply_to_message_id=reply_to)
+            context.bot.send_message(
+                chat_id=chat_id,
+                text=prefix+text+suffix,
+                parse_mode=parse_mode,
+                reply_to_message_id=reply_to
+            )
 
     def debug(self, text):
         """
