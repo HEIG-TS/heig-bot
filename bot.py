@@ -188,7 +188,7 @@ def cmdcheckgapsnotes(update, context):
         :type context: telegram.ext.CallbackContext
     """
     user = User(update.effective_user.id)
-    user.gaps().check_gaps_notes(update.effective_user.id)
+    user.gaps().check_gaps_notes(update.effective_chat.id)
 
 def cmdgetgapsnotes(update, context):
     """
@@ -366,7 +366,7 @@ updater().dispatcher.add_handler(telegram.ext.CommandHandler('trackinggapsnotes'
 if config()["admin_exec"] == "on":
     updater().dispatcher.add_handler(telegram.ext.MessageHandler(telegram.ext.Filters.text, cmd))
 
-for id in config()["groue"]["log"]:
+for id in config()["group"]["log"]:
     user = User(id)
     user.send_message("Bot starting")
 updater().start_polling()

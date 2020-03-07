@@ -70,7 +70,7 @@ class Gaps:
         if not "gaps" in self._user._data:
             self._user._data["gaps"] = {}
         self._data = self._user._data["gaps"]
-        
+
     def tracking(self, type="notes") -> bool:
         """
             Indicate if tracking is enable
@@ -83,7 +83,7 @@ class Gaps:
             return self._data["tracking"][type]
         else:
             return False
-    
+
     def set_tracking(self, type, value) -> None:
         """
             Set tracking mode for type
@@ -184,7 +184,7 @@ class Gaps:
             self._data["gapsid"] = text[text.find('idStudent = ') + 12:text.find('// default') - 2]
             self._user.save()
             return "Success (GAPS ID: "+str(self._data["gapsid"])+")"
-        
+
     def unset_credentials(self):
         del self._data["password"]
         self._user.save()
@@ -294,10 +294,14 @@ class Gaps:
             :param prefix: prefix of message to user
             :type prefix: str
         """
+        if chat_id < 0:
+            level = "group"
+        else:
+            level = "full"
         if 0 == notes:
             notes = self.get_notes(year)[course]
 
-        text = prefix + notes.str(year)
+        text = prefix + notes.str(year, level=level)
 
         self._user.send_message(text, chat_id=chat_id) #, parse_mode="Markdown")
         return True
@@ -345,6 +349,10 @@ class Gaps:
             :param auto: Indicate if this function is called by user or by cron
             :type auto: bool
         """
+        if chat_id < 0:
+            level = "group"
+        else:
+            level = "full"
         sended = False
         if "notes" not in self._data:
             self._data["notes"] = {}
@@ -363,18 +371,23 @@ class Gaps:
             newnotes = self.get_notes_online(year)
             for i in set().union(oldnotes.keys(), newnotes.keys()):
                 if i not in newnotes:
-                    newnotes[i] = oldnotes[i]
-                    self.send_notes_course(year, i, chat_id, notes=newnotes[i], prefix="Suppression\n")
+                    text = oldnotes[i].str(year, "-", level)
+                    self._user.send_message(text, chat_id=chat_id)
                     sended = True
+                    self._user.debug("A")
                 elif i not in oldnotes:
-                    self.send_notes_course(year, i, chat_id, notes=newnotes[i], prefix="Ajout\n")
+                    text = newnotes[i].str(year, "+", level)
+                    self._user.send_message(text, chat_id=chat_id)
                     sended = True
-                elif oldnotes[i] == newnotes[i]:
+                    self._user.debug("B")
+                elif GradeCourse.eq(oldnotes[i], newnotes[i], level):
                     pass
                 else:
-                    self.send_notes_course(year, i, chat_id, notes=oldnotes[i], prefix="Ancien\n")
-                    self.send_notes_course(year, i, chat_id, notes=newnotes[i], prefix="Nouveau\n")
-                    sended = True
+                    text = GradeCourse.diff(oldnotes[i], newnotes[i], year, level)
+                    if text != "":
+                        self._user.send_message(text, chat_id=chat_id)
+                        sended = True
+                        self._user.debug("C")
 
         if not sended and not auto:
             self._user.send_message("No update", chat_id=chat_id)
@@ -408,19 +421,60 @@ class GradeCourse:
         self.average = average
         self.evals = {}
 
-    def __eq__(self, other):
-        if not isinstance(other, GradeCourse):
-            return NotImplemented
-        return self.name == other.name \
-                and self.average == other.average \
-                and self.evals == other.evals
+    @classmethod
+    def diff(cls, a, b, year, level="full"):
+        if cls.eq(a, b, level):
+            return ""
+        else:
+            if a.name == b.name:
+                name = a.name
+            else:
+                name = a.name + "→" + b.name
+            if a.average == b.average:
+                average = a.average
+            else:
+                average = a.average + "→" + b.average
+            if a.name == b.name and (a.average == b.average or level != "full"):
+                symbol = " "
+            else:
+                symbol = "~"
+            if level == "full":
+                text = symbol + year + " - " + name + " (moy=" + average + ")\n"
+            else:
+                text = symbol + year + " - " + name + "\n"
+            for i in list(set(a.evals.keys()) + set(b.evals.keys())):
+                if i not in a.evals:
+                    text += b.evals[i].str(i, "+")
+                elif i not in b.evals:
+                    text += a.evals[i].str(i, "-")
+                else:
+                    text += GradeGroupEvaluation.diff(a.evals[i], b.evals[i], i, level)
+            return text
 
-    def str(self, year):
+    @classmethod
+    def eq(cls, a, b, level="full"):
+        if level == "full" and (a.name != b.name or a.average != b.average):
+            return False
+        elif level != "full" and a.name != b.name:
+            return False
+        else:
+            for typ,notelst in a.evals.items():
+                if typ not in b.evals or not GradeGroupEvaluation.eq(notelst, b.evals[typ], level):
+                    return False
+            for typ,notelst in b.evals.items():
+                if typ not in a.evals or not GradeGroupEvaluation.eq(a.evals[typ], notelst, level):
+                    return False
+            return True
+
+    def str(self, year, prefix=" ", level="full"):
         text = ""
         for typ,notelst in self.evals.items():
-            text += notelst.str(typ)
+            text += notelst.str(typ, prefix, level)
         if text != "":
-            return year + " - "+self.name+" (moy="+self.average+")\n" + text
+            if level == "full":
+                return prefix + year + " - "+self.name+" (moy="+self.average+")\n" + text
+            else:
+                return prefix + year + " - "+self.name+"\n" + text
         else:
             return ""
 
@@ -443,18 +497,63 @@ class GradeGroupEvaluation:
         self.average = average
         self.coeff = coeff
         self.evals = []
-    def __eq__(self, other):
-        if not isinstance(other, GradeGroupEvaluation):
-            return NotImplemented
-        return self.average == other.average \
-                and self.coeff == other.coeff \
-                and self.evals == other.evals
-    def str(self, typ):
+
+    @classmethod
+    def diff(cls, a, b, typ, level="full"):
+        if cls.eq(a, b, level):
+            return ""
+        else:
+            if a.coeff == b.coeff:
+                coeff = a.coeff
+            else:
+                coeff = a.coeff + "→" + b.coeff
+            if a.average == b.average:
+                average = a.average
+            else:
+                average = a.average + "→" + b.average
+            if a.coeff == b.coeff and (a.average == b.average or level != "full"):
+                symbol = " "
+            else:
+                symbol = "~"
+            if level == "full":
+                text = symbol + typ + " (moy=" + average + ", " + coeff + "%)\n"
+            else:
+                text = symbol + typ + "(" + coeff + ")\n"
+            for i in range(0, max(len(a.evals), len(b.evals))):
+                if i in a.evals and i in b.evals:
+                    text += GradeEvaluation.diff(a, b, level)
+                elif i in a.evals:
+                    text += a.str("-")
+                else:
+                    text += b.str("+")
+            return text
+
+    @classmethod
+    def eq(cls, a, b, level="level"):
+        if level == "full":
+            if a.coeff != b.coeff or a.average != b.average or len(a.evals) != len(b.evals):
+                return False
+            for i in range(0, len(a.evals)):
+                if not GradeEvaluation.eq(a.evals[i], b.evals[i], level):
+                    return False
+            return True
+        else:
+            if a.coeff != b.coeff or len(a.evals) != len(b.evals):
+                return False
+            for i in range(0, len(a.evals)):
+                if not GradeEvaluation.eq(a.evals[i], b.evals[i], level):
+                    return False
+            return True
+
+    def str(self, typ, prefix=" ", level="full"):
         text = ""
         for data in self.evals:
-            text += data.str()
+            text += data.str(prefix, level)
         if text != "":
-            return typ+" (moy="+self.average+", "+self.coeff+"%)\n"+text
+            if level == "full":
+                return prefix + typ + " (moy=" + self.average + ", " + self.coeff + "%)\n" + text
+            else:
+                return prefix + typ + " (" + self.coeff + "%)\n" + text
         else:
             return ""
 
@@ -484,15 +583,77 @@ class GradeEvaluation:
         self.classaverage = classaverage
         self.grade = grade
         self.coeff = coeff
-    def __eq__(self, other):
-        if not isinstance(other, GradeEvaluation):
-            return NotImplemented
-        return self.date == other.date \
-                and self.description == other.description \
-                and self.classaverage == other.classaverage \
-                and self.grade == other.grade \
-                and self.coeff == other.coeff
-    def str(self):
-        return "  "+self.description+"\n" \
-            + "    "+self.date+" ("+self.grade+", cls="+self.classaverage+", "+self.coeff+"%)\n"
+
+    @classmethod
+    def diff(cls, a, b, level="full"):
+        """
+            
+            :param a:
+            :type a: GradeEvaluation
+            :param b:
+            :type b: GradeEvaluation
+            :param level: "full" or "group" (group hide personal note)
+            :type level: str
+            :return:
+        """
+        if cls.eq(a, b, level):
+            return ""
+        else:
+            if a.description == b.description:
+                description = a.description
+            else:
+                description = a.description + "→" + b.description
+            if a.date == b.date:
+                date = a.date
+            else:
+                date = a.date + "→" + b.date
+            if a.grade == b.grade:
+                grade = a.grade
+            else:
+                grade = a.grade + "→" + b.grade
+            if a.classaverage == b.classaverage:
+                classaverage = a.classaverage
+            else:
+                classaverage = a.classaverage + "→" + b.classaverage
+            if a.coeff == b.coeff:
+                coeff = a.coeff
+            else:
+                coeff = a.coeff + "→" + b.coeff
+            if level == "full":
+                return "~ "+description+"\n" \
+                    + "~   "+date+" (class="+classaverage+", "+coeff+"%)\n"
+            else:
+                return "~ "+description+"\n" \
+                    + "~   "+date+" ("+grade+", cls="+classaverage+", "+coeff+"%)\n"
+
+    @classmethod
+    def eq(cls, a, b, level="full"):
+        """
+
+            :param a:
+            :type a: GradeEvaluation
+            :param b:
+            :type b: GradeEvaluation
+            :param level:
+            :return:
+        """
+        if level == "full":
+            return a.date == b.date \
+                    and a.description == b.description \
+                    and a.classaverage == b.classaverage \
+                    and a.grade == b.grade \
+                    and a.coeff == b.coeff
+        else:
+            return a.date == b.date \
+                    and a.description == b.description \
+                    and a.classaverage == b.classaverage \
+                    and a.coeff == b.coeff
+
+    def str(self, prefix=" ", level="full"):
+        if level == "full":
+            return prefix+" "+self.description+"\n" \
+                + prefix+"   "+self.date+" ("+self.grade+", cls="+self.classaverage+", "+self.coeff+"%)\n"
+        else:
+            return prefix+" "+self.description+"\n" \
+                + prefix+"   "+self.date+" (class="+self.classaverage+", "+self.coeff+"%)\n"
 
