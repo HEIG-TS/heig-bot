@@ -128,9 +128,9 @@ def cmd_untracking_gaps_notes(update, context) -> None:
     """
     u = User(update.effective_user.id)
     print("Z")
-    u.gaps().set_tracking(type="notes", branch_list=False)
+    u.gaps().set_tracking(type="notes", branch_list=False, user_id=update.effective_chat.id)
     print("A")
-    if u.gaps().tracking("notes"):
+    if u.gaps().tracking("notes", user_id=update.effective_chat.id):
         text = "Tracking gaps notes is *enable*"
     else:
         text = "Tracking gaps notes is *disable*"
@@ -158,13 +158,13 @@ def cmd_tracking_gaps_notes(update, context) -> None:
     text = ""
 
     if len(context.args) == 1 and context.args[0] == "*":
-        u.gaps().set_tracking(type="notes", branch_list=True)
+        u.gaps().set_tracking(type="notes", branch_list=True, user_id=update.effective_chat.id)
     elif len(context.args) >= 1:
-        u.gaps().set_tracking(type="notes", branch_list=context.args)
+        u.gaps().set_tracking(type="notes", branch_list=context.args, user_id=update.effective_chat.id)
     else:
         text = "Usage: /trackinggapsnotes *\n"
         text = "Usage: /trackinggapsnotes <branchname> ...\n\n"
-    if u.gaps().tracking("notes"):
+    if u.gaps().tracking("notes", user_id=update.effective_chat.id):
         text += "Tracking gaps notes is *enable*"
     else:
         text += "Tracking gaps notes is *disable*"
