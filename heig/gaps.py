@@ -153,6 +153,8 @@ class Gaps:
         :param dt: Date for show lesson
         :param text: Return type is text
         """
+        if "gapsid" not in self._data:
+            raise GapsError("You are not gaps id, please /setgapscredentials")
         c = Calendar(self.get_timetable_ics(2019, 3, self._data["gapsid"], 2))
         if text:
             ret = dt.format('*dddd D MMMM YYYY*\n', locale="fr")
