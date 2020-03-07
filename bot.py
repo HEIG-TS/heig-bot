@@ -162,7 +162,7 @@ def cmd_tracking_gaps_notes(update, context) -> None:
     elif len(context.args) >= 1:
         u.gaps().set_tracking(type="notes", branch_list=context.args, user_id=update.effective_chat.id)
     else:
-        text = "Usage: /trackinggapsnotes *\n"
+        text = "Usage: /trackinggapsnotes \*\n"
         text += "Usage: /trackinggapsnotes <branchname> ...\n\n"
     if u.gaps().tracking("notes", user_id=update.effective_chat.id):
         text += "Tracking gaps notes is *enable*"
