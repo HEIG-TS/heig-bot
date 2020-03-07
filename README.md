@@ -92,3 +92,8 @@ Install deps for generate docs (see above).
 cd docs
 make html
 ```
+
+### Publish new version
+ - [ ] Update [CHANGES.rst](CHANGES.rst)
+ - [ ] Update version number [heig/init.py](heig/init.py)
+ 

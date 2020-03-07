@@ -5,7 +5,7 @@
 	"debug_send": 1,
 	"admin_exec": "off",
 	"group": 
-	[
+	{
 		"admin":
 		[
 			""
@@ -18,5 +18,5 @@
 		[
 			""
 		]
-	]
+	}
 }
