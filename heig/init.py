@@ -27,8 +27,8 @@ from heig.gaps import GapsError
 BOT_VERSION_MAJOR = 0
 BOT_VERSION_MINOR = 3
 BOT_VERSION_REVISION = 2
-BOT_RELEASE = str(BOT_VERSION_MAJOR)+"."+str(BOT_VERSION_MINOR)
-BOT_VERSION = BOT_RELEASE+"."+str(BOT_VERSION_REVISION)
+BOT_RELEASE = str(BOT_VERSION_MAJOR) + "." + str(BOT_VERSION_MINOR)
+BOT_VERSION = BOT_RELEASE + "." + str(BOT_VERSION_REVISION)
 
 COPYRIGHT_INFO = """Copyright 2019,2020 Gabriel Roch
 
@@ -41,18 +41,20 @@ You should have received a copy of the GNU General Public License along with hei
 Code source of this software can be download at https://github.com/g-roch/heig-bot .
 """
 
+
 def onerror(update, context):
     str_error = ""
     try:
         raise context.error
     except GapsError as error:
-        str_error = "Error : "+str(error)
+        str_error = "Error : " + str(error)
     except:
         str_error = "Unknow error! See the console for more details."
     context.bot.send_message(chat_id=update.effective_chat.id, text=str_error)
-    str_debug = "["+str(update.effective_chat.id)+"] "+str(context.error)
+    str_debug = "[" + str(update.effective_chat.id) + "] " + str(context.error)
     if config()["debug"] >= 3:
-        updater().bot.send_message(chat_id=update.effective_chat.id, text="```\n" + str_debug + "\n```", parse_mode="Markdown")
+        updater().bot.send_message(chat_id=update.effective_chat.id, text="```\n" + str_debug + "\n```",
+                                   parse_mode="Markdown")
     if config()["debug"] >= 2:
         for uid in config()["admin"]["debug"]:
             if str(uid) != str(update.effective_chat.id):
@@ -63,21 +65,24 @@ def onerror(update, context):
 
 sys.setrecursionlimit(10000)
 
-#if len(sys.argv) == 2:
+
+# if len(sys.argv) == 2:
 #    config = json.load(open(sys.argv[1], 'r'))
-#else:
+# else:
 def config():
     if not hasattr(config, "data"):
         config.data = json.load(open("config.json", 'r'))
     return config.data
 
+
 def updater():
     if not hasattr(updater, "data"):
         updater.data = telegram.ext.Updater(token=config()["bot_token"], use_context=True)
         logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                     level=logging.INFO)
+                            level=logging.INFO)
         updater.data.dispatcher.add_error_handler(onerror)
     return updater.data
+
 
 # dispatcher = updater.dispatcher
 
@@ -87,4 +92,3 @@ def saveconfig(c):
     :param c: array to save
     """
     json.dump(c, open("config.json", 'w'), indent=2)
-

@@ -28,6 +28,7 @@ from heig.gaps import Gaps
 
 DIR_DB_PICKLE = "/heig.user/"
 
+
 class User:
     """
         User manager
@@ -51,8 +52,8 @@ class User:
             :type user_id: 
         """
         self._user_id = user_id
-        self._filename = config()["database_directory"]+DIR_DB_PICKLE+str(self._user_id)+".pickle"
-        if(os.path.isfile(self._filename)):
+        self._filename = config()["database_directory"] + DIR_DB_PICKLE + str(self._user_id) + ".pickle"
+        if (os.path.isfile(self._filename)):
             file = open(self._filename, 'rb')
             self._data = pickle.load(file);
         else:
@@ -68,7 +69,7 @@ class User:
         """
             Save user's data on disk
         """
-        os.makedirs(config()["database_directory"]+DIR_DB_PICKLE, exist_ok=True)
+        os.makedirs(config()["database_directory"] + DIR_DB_PICKLE, exist_ok=True)
         file = open(self._filename, 'wb')
         pickle.dump(self._data, file)
 
@@ -131,7 +132,7 @@ class User:
             if len(text) + len(line) + len(suffix) >= telegram.constants.MAX_MESSAGE_LENGTH:
                 context.bot.send_message(
                     chat_id=chat_id,
-                    text=prefix+text+suffix,
+                    text=prefix + text + suffix,
                     parse_mode=parse_mode,
                     reply_to_message_id=reply_to
                 )
@@ -140,10 +141,10 @@ class User:
             else:
                 text += line + "\n"
         if not text == "":
-            self.debug("SEND: "+(prefix+text+suffix).strip())
+            self.debug("SEND: " + (prefix + text + suffix).strip())
             context.bot.send_message(
                 chat_id=chat_id,
-                text=prefix+text+suffix,
+                text=prefix + text + suffix,
                 parse_mode=parse_mode,
                 reply_to_message_id=reply_to
             )
@@ -155,11 +156,9 @@ class User:
             :param text: Information to display
             :type text: str
         """
-        debug_text = "["+str(self.id()) + "] " + text
+        debug_text = "[" + str(self.id()) + "] " + text
         if config()["debug_send"] >= 1:
             print(debug_text)
         if config()["debug_send"] >= 2:
             for uid in config()["group"]["debug"]:
-                updater().bot.send_message(chat_id=uid, text="```\n"+debug_text+"\n```", parse_mode="Markdown")
-
-
+                updater().bot.send_message(chat_id=uid, text="```\n" + debug_text + "\n```", parse_mode="Markdown")

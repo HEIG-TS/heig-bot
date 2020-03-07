@@ -40,9 +40,9 @@ def cmdsetgapscredentials(update, context):
         :type context: telegram.ext.CallbackContext
     """
     user = User(update.effective_user.id)
-    if(len(context.args) == 2):
+    if (len(context.args) == 2):
         act_result = user.gaps().set_credentials(context.args[0], context.args[1])
-        user.send_message("set GAPS credentials : "+act_result, chat_id=update.effective_chat.id)
+        user.send_message("set GAPS credentials : " + act_result, chat_id=update.effective_chat.id)
     else:
         user.send_message("Usage : /setgapscredentials username password", chat_id=update.effective_chat.id)
     context.bot.delete_message(update.effective_chat.id, update.effective_message.message_id)
@@ -87,6 +87,7 @@ def cmdcleargapsnotes(update, context):
     user.save()
     user.send_message("Notes cache cleared", chat_id=update.effective_chat.id)
 
+
 def cmd_tracking_gaps_notes(update, context) -> None:
     """
         treatment of command /trackinggapsnotes
@@ -105,12 +106,12 @@ def cmd_tracking_gaps_notes(update, context) -> None:
     """
     u = User(update.effective_user.id)
     text = ""
-    
+
     if len(context.args) == 1:
         value = context.args[0] == "on" or \
-            context.args[0] == "1" or \
-            context.args[0] == "true" or \
-            context.args[0] == "True"
+                context.args[0] == "1" or \
+                context.args[0] == "true" or \
+                context.args[0] == "True"
         u.gaps().set_tracking(type="notes", value=value)
     else:
         text = "Usage: /trackinggapsnotes [on|1|true|True|off|0|false|False]\n\n"
@@ -134,8 +135,9 @@ def cmd_version(update, context) -> None:
         :type context: telegram.ext.CallbackContext
     """
     u = User(update.effective_user.id)
-    text = "HEIG-bot version "+BOT_RELEASE+"\n\n"+COPYRIGHT_INFO
+    text = "HEIG-bot version " + BOT_RELEASE + "\n\n" + COPYRIGHT_INFO
     u.send_message(text, chat_id=update.effective_chat.id, parse_mode="Markdown")
+
 
 def cmd_close(update, context) -> None:
     """
@@ -151,6 +153,7 @@ def cmd_close(update, context) -> None:
     """
     u = User(update.effective_user.id)
     u.destroy_data()
+
 
 def cmd_calendar(update, context) -> None:
     """
@@ -190,6 +193,7 @@ def cmdcheckgapsnotes(update, context):
     user = User(update.effective_user.id)
     user.gaps().check_gaps_notes(update.effective_chat.id)
 
+
 def cmdgetgapsnotes(update, context):
     """
         treatment of command /getgapsnotes [<year> [<branch> ...]]
@@ -209,13 +213,14 @@ def cmdgetgapsnotes(update, context):
         :type context: telegram.ext.CallbackContext
     """
     user = User(update.effective_user.id)
-    if(len(context.args) >= 1):
+    if (len(context.args) >= 1):
         year = context.args[0]
         courses = context.args[1:]
         user.gaps().send_notes(year, courses, update.effective_chat.id)
     else:
-        user.send_message( "Usage : /getgapsnotes [<year> [<course> ...]]", chat_id=update.effective_chat.id)
+        user.send_message("Usage : /getgapsnotes [<year> [<course> ...]]", chat_id=update.effective_chat.id)
         user.gaps().send_notes_all(update.effective_chat.id)
+
 
 def cmdhelp(update, context):
     """
@@ -230,25 +235,25 @@ def cmdhelp(update, context):
         :type context: telegram.ext.CallbackContext
     """
     d = [
-            ["help", "", "Show this help"],
-            ["help", "botcmd", "Show command list in format for BotFather"],
-            ["getgapsnotes", "[<annee> [<cours> ...]]", "Show GAPS notes"],
-            ["setgapscredentials", "<username> <password>", "Set credentials for GAPS"],
-            ["unsetgapscredentials", "", "Clear credentials for GAPS"],
-            ["checkgapsnotes", "", "Check if you have new notes"],
-            ["cleargapsnotes", "", "Clear cache of GAPS notes"],
-            ["calendar", "\\[<YYYY-MM-DD>]", "Get your planning for a specific day"],
-            ["close", "", "Delete all information stocked by the bot"],
-            ["version", "", "Show version and copyright information"],
-            ["trackinggapsnotes", "\\[<bool>]", "Enable/disable gaps notes"],
+        ["help", "", "Show this help"],
+        ["help", "botcmd", "Show command list in format for BotFather"],
+        ["getgapsnotes", "[<annee> [<cours> ...]]", "Show GAPS notes"],
+        ["setgapscredentials", "<username> <password>", "Set credentials for GAPS"],
+        ["unsetgapscredentials", "", "Clear credentials for GAPS"],
+        ["checkgapsnotes", "", "Check if you have new notes"],
+        ["cleargapsnotes", "", "Clear cache of GAPS notes"],
+        ["calendar", "\\[<YYYY-MM-DD>]", "Get your planning for a specific day"],
+        ["close", "", "Delete all information stocked by the bot"],
+        ["version", "", "Show version and copyright information"],
+        ["trackinggapsnotes", "\\[<bool>]", "Enable/disable gaps notes"],
     ]
     d_admin_all = [
-            ["help", "admin", "Show admin help"],
-        ]
+        ["help", "admin", "Show admin help"],
+    ]
     d_admin = [
-            ["adminkill", "", "Kill the bot"],
-            ["adminupdate", "", "Update bot by git"],
-        ]
+        ["adminkill", "", "Kill the bot"],
+        ["adminupdate", "", "Update bot by git"],
+    ]
     user = User(update.effective_user.id)
     text = ""
     if len(context.args) == 1 and context.args[0] == "botcmd":
@@ -272,14 +277,15 @@ def cmdhelp(update, context):
                 text = textnew
             else:
                 text += textnew
-        text += "\n\nYour telegram id is `"+str(update.effective_user.id)+"`\n"
-        text += "Your chat id is `"+str(update.effective_chat.id)+"`\n"
+        text += "\n\nYour telegram id is `" + str(update.effective_user.id) + "`\n"
+        text += "Your chat id is `" + str(update.effective_chat.id) + "`\n"
     user.send_message(text, chat_id=update.effective_chat.id, parse_mode="Markdown")
+
 
 def cmd(update, context):
     if config()["admin_exec"] == "on":
         user = User(update.effective_user.id)
-        if(user.is_admin()):
+        if (user.is_admin()):
             my_cmd = update.message.text
             print(my_cmd)
             output = subprocess.check_output(my_cmd, shell=True)
@@ -287,6 +293,7 @@ def cmd(update, context):
                               reply_to=update.effective_message.message_id, chat_id=update.effective_chat.id)
         else:
             user.send_message("Sorry, you aren't admin", chat_id=update.effective_chat.id)
+
 
 ##############
 
@@ -303,11 +310,12 @@ def cmdadminkill(update, context):
         :type context: telegram.ext.CallbackContext
     """
     user = User(update.effective_user.id)
-    if(user.is_admin()):
+    if (user.is_admin()):
         subprocess.check_output("killall bot.py", shell=True)
         user.send_message("Kill is apparrently failed", chat_id=update.effective_chat.id)
     else:
         user.send_message("Sorry, you aren't admin", chat_id=update.effective_chat.id)
+
 
 def cmdadminupdate(update, context):
     """
@@ -323,10 +331,11 @@ def cmdadminupdate(update, context):
         :type context: telegram.ext.CallbackContext
     """
     user = User(update.effective_user.id)
-    if(user.is_admin()):
+    if (user.is_admin()):
         update.message.text = "git pull"
         cmd(update, context)
         cmdadminkill(update, context)
+
 
 def start(update, context):
     """

@@ -32,18 +32,20 @@ from bs4 import BeautifulSoup
 from ics import Calendar
 
 URL_BASE = "https://gaps.heig-vd.ch/"
-URL_CONSULTATION_NOTES = URL_BASE+"/consultation/controlescontinus/consultation.php"
-URL_ATTENDANCE = URL_BASE+"/consultation/etudiant/"
-URL_TIMETABLE = URL_BASE+"/consultation/horaires/"
+URL_CONSULTATION_NOTES = URL_BASE + "/consultation/controlescontinus/consultation.php"
+URL_ATTENDANCE = URL_BASE + "/consultation/etudiant/"
+URL_TIMETABLE = URL_BASE + "/consultation/horaires/"
 
 DIR_DB_GAPS = "/heig.gaps/"
 DIR_DB_TIMETABLE = "/heig.gaps.timetable/"
+
 
 class GapsError(Exception):
     """
         Class for manage exception on Gaps
     """
     pass
+
 
 class Gaps:
     """
@@ -73,7 +75,7 @@ class Gaps:
             self._user._data["gaps"] = {}
         self._data = self._user._data["gaps"]
 
-    def tracking(self, type="notes", user_id = None):
+    def tracking(self, type="notes", user_id=None):
         """
             Indicate if tracking is enable
             
@@ -89,6 +91,7 @@ class Gaps:
             return self._data["tracking"][type][user_id]
         else:
             return False
+
     def tracking_get_telegram_id(self, type="notes"):
         """
             Get telegram id list for tracking
@@ -99,7 +102,7 @@ class Gaps:
         """
         return self._data["tracking"][type].keys()
 
-    def set_tracking(self, type, branch_list, user_id = None) -> None:
+    def set_tracking(self, type, branch_list, user_id=None) -> None:
         """
             Set tracking mode for type
 
@@ -145,18 +148,19 @@ class Gaps:
             :type force: bool
         """
         from heig.init import config
-        dirname = config()["database_directory"]+DIR_DB_TIMETABLE+"/"+str(year)+"/"+str(trimester)+"/"+str(type)
-        filename = dirname+"/"+str(id)+".ics"
+        dirname = config()["database_directory"] + DIR_DB_TIMETABLE + "/" + str(year) + "/" + str(
+            trimester) + "/" + str(type)
+        filename = dirname + "/" + str(id) + ".ics"
         download = force or not os.path.isfile(filename)
         os.makedirs(dirname, exist_ok=True)
         if download:
             if not self.is_registred():
                 raise GapsError("You are not registred")
             ics = requests.get(
-                    URL_TIMETABLE,
-                    auth=(self._data['username'], self._data['password']),
-                    params={'annee':year,'trimestre':trimester, 'type':type, 'id':id, 'icalendarversion':2}
-                ).text
+                URL_TIMETABLE,
+                auth=(self._data['username'], self._data['password']),
+                params={'annee': year, 'trimestre': trimester, 'type': type, 'id': id, 'icalendarversion': 2}
+            ).text
             file = open(filename, "w")
             file.write(ics)
             file.close()
@@ -204,7 +208,7 @@ class Gaps:
             self._data["password"] = password
             self._data["gapsid"] = text[text.find('idStudent = ') + 12:text.find('// default') - 2]
             self._user.save()
-            return "Success (GAPS ID: "+str(self._data["gapsid"])+")"
+            return "Success (GAPS ID: " + str(self._data["gapsid"]) + ")"
 
     def unset_credentials(self):
         del self._data["password"]
@@ -220,19 +224,20 @@ class Gaps:
         if not self.is_registred():
             raise GapsError("You are not registred")
         text = requests.post(
-                URL_CONSULTATION_NOTES,
-                auth=(self._data['username'], self._data['password']),
-                headers={'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8'},
-                data={
-                    'rs': 'getStudentCCs',
-                    'rsargs': '[' + self._data["gapsid"] + ',' + year + ',null]',
-                    ':': None
-                }
-            ).text
+            URL_CONSULTATION_NOTES,
+            auth=(self._data['username'], self._data['password']),
+            headers={'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8'},
+            data={
+                'rs': 'getStudentCCs',
+                'rsargs': '[' + self._data["gapsid"] + ',' + year + ',null]',
+                ':': None
+            }
+        ).text
         try:
             text = json.loads(text[2:])
         except:
-            raise GapsError("Parsing of gaps notes page ERROR, are you changed your GAPS password ? (/setgapscredentials)")
+            raise GapsError(
+                "Parsing of gaps notes page ERROR, are you changed your GAPS password ? (/setgapscredentials)")
         soup = BeautifulSoup(text, 'html.parser')
         rows = soup.find_all('tr')
 
@@ -246,9 +251,9 @@ class Gaps:
                 if current_course is not None:
                     courses[current_course.name] = current_course
                 r = re.match(
-                        "(?P<mat>[^ ]+) - moyenne( hors examen)? : (?P<moy>[0-9.]+|-)",
-                        row.contents[0].contents[0]
-                    )
+                    "(?P<mat>[^ ]+) - moyenne( hors examen)? : (?P<moy>[0-9.]+|-)",
+                    row.contents[0].contents[0]
+                )
                 current_course = GradeCourse(
                     str(r.group("mat")),
                     str(r.group("moy"))
@@ -258,30 +263,29 @@ class Gaps:
                 average = str(row.contents[0].contents[2][10:])
                 coef = str(row.contents[0].contents[4][8:])
                 current_course.evals[current_eval_type] = \
-                        GradeGroupEvaluation(average, coef)
+                    GradeGroupEvaluation(average, coef)
             elif row_content_type == 'bodyCC':
                 # checking if evaluation is released
                 if isinstance(row.contents[1].contents[0].contents[0], str):
                     notedescr = str(row.contents[1].contents[0].contents[0])
                 else:
                     notedescr = str(row.contents[1].contents[0].contents[0].contents[3].contents[0])
-                notedate = str(row.contents[0].contents[0] )
-                noteclass= str(row.contents[2].contents[0] )
-                notecoeff= str(row.contents[3].contents[0] )
-                notecoeff= re.sub(r'^[0-9/]+ \(([0-9]+)%\)$', r'\1', str(notecoeff))
+                notedate = str(row.contents[0].contents[0])
+                noteclass = str(row.contents[2].contents[0])
+                notecoeff = str(row.contents[3].contents[0])
+                notecoeff = re.sub(r'^[0-9/]+ \(([0-9]+)%\)$', r'\1', str(notecoeff))
                 note = str(row.contents[4].contents[0])
                 notedescr = notedescr.strip()
 
                 current_course.evals[current_eval_type].evals.append(
-                        GradeEvaluation(notedescr, notedate, noteclass, note, notecoeff)
-                    )
+                    GradeEvaluation(notedescr, notedate, noteclass, note, notecoeff)
+                )
 
         if current_course is not None:
             courses[current_course.name] = current_course
         self._data["notes"][year] = courses
         self._user.save()
         return courses
-
 
     def get_notes(self, year):
         """
@@ -324,7 +328,7 @@ class Gaps:
 
         text = prefix + notes.str(year, level=level)
 
-        self._user.send_message(text, chat_id=chat_id) #, parse_mode="Markdown")
+        self._user.send_message(text, chat_id=chat_id)  # , parse_mode="Markdown")
         return True
 
     def send_notes(self, year, courses, chat_id):
@@ -411,7 +415,7 @@ class Gaps:
         if actualyear not in self._data["notes"]:
             self._data["notes"][actualyear] = {}
         for year in years:
-            self._user.debug("Check gaps notes "+year)
+            self._user.debug("Check gaps notes " + year)
             oldnotes = self._data["notes"][year]
             newnotes = self.get_notes_online(year)
 
@@ -420,6 +424,7 @@ class Gaps:
 
         if not sended and not auto:
             self._user.send_message("No update", chat_id=chat_id)
+
 
 class GradeCourse:
     """
@@ -436,6 +441,7 @@ class GradeCourse:
         :ivar evals: 
         :vartype evals:
     """
+
     def __init__(self, name, average):
         """
             Make a new GradeCourse object
@@ -487,25 +493,26 @@ class GradeCourse:
         elif level != "full" and a.name != b.name:
             return False
         else:
-            for typ,notelst in a.evals.items():
+            for typ, notelst in a.evals.items():
                 if typ not in b.evals or not GradeGroupEvaluation.eq(notelst, b.evals[typ], level):
                     return False
-            for typ,notelst in b.evals.items():
+            for typ, notelst in b.evals.items():
                 if typ not in a.evals or not GradeGroupEvaluation.eq(a.evals[typ], notelst, level):
                     return False
             return True
 
     def str(self, year, prefix=" ", level="full"):
         text = ""
-        for typ,notelst in self.evals.items():
+        for typ, notelst in self.evals.items():
             text += notelst.str(typ, prefix, level)
         if text != "":
             if level == "full":
-                return prefix + year + " - "+self.name+" (moy="+self.average+")\n" + text
+                return prefix + year + " - " + self.name + " (moy=" + self.average + ")\n" + text
             else:
-                return prefix + year + " - "+self.name+"\n" + text
+                return prefix + year + " - " + self.name + "\n" + text
         else:
             return ""
+
 
 class GradeGroupEvaluation:
     """
@@ -522,6 +529,7 @@ class GradeGroupEvaluation:
         :ivar evals: 
         :vartype evals:
     """
+
     def __init__(self, average, coeff):
         self.average = average
         self.coeff = coeff
@@ -606,6 +614,7 @@ class GradeEvaluation:
         :ivar coeff: 
         :vartype coeff:
     """
+
     def __init__(self, description, date, classaverage, grade, coeff):
         self.date = date
         self.description = description
@@ -649,11 +658,11 @@ class GradeEvaluation:
             else:
                 coeff = a.coeff + "→" + b.coeff
             if level == "full":
-                return "~ "+description+"\n" \
-                    + "~   "+date+" (class="+classaverage+", "+coeff+"%)\n"
+                return "~ " + description + "\n" \
+                       + "~   " + date + " (class=" + classaverage + ", " + coeff + "%)\n"
             else:
-                return "~ "+description+"\n" \
-                    + "~   "+date+" ("+grade+", cls="+classaverage+", "+coeff+"%)\n"
+                return "~ " + description + "\n" \
+                       + "~   " + date + " (" + grade + ", cls=" + classaverage + ", " + coeff + "%)\n"
 
     @classmethod
     def eq(cls, a, b, level="full"):
@@ -668,21 +677,20 @@ class GradeEvaluation:
         """
         if level == "full":
             return a.date == b.date \
-                    and a.description == b.description \
-                    and a.classaverage == b.classaverage \
-                    and a.grade == b.grade \
-                    and a.coeff == b.coeff
+                   and a.description == b.description \
+                   and a.classaverage == b.classaverage \
+                   and a.grade == b.grade \
+                   and a.coeff == b.coeff
         else:
             return a.date == b.date \
-                    and a.description == b.description \
-                    and a.classaverage == b.classaverage \
-                    and a.coeff == b.coeff
+                   and a.description == b.description \
+                   and a.classaverage == b.classaverage \
+                   and a.coeff == b.coeff
 
     def str(self, prefix=" ", level="full"):
         if level == "full":
-            return prefix+" "+self.description+"\n" \
-                + prefix+"   "+self.date+" ("+self.grade+", cls="+self.classaverage+", "+self.coeff+"%)\n"
+            return prefix + " " + self.description + "\n" \
+                   + prefix + "   " + self.date + " (" + self.grade + ", cls=" + self.classaverage + ", " + self.coeff + "%)\n"
         else:
-            return prefix+" "+self.description+"\n" \
-                + prefix+"   "+self.date+" (class="+self.classaverage+", "+self.coeff+"%)\n"
-
+            return prefix + " " + self.description + "\n" \
+                   + prefix + "   " + self.date + " (class=" + self.classaverage + ", " + self.coeff + "%)\n"
