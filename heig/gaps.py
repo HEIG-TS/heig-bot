@@ -55,7 +55,9 @@ class Gaps:
         :ivar _data: GAPS information
             _data["notes"][2020]["ANA"] = GradeCourse
             _data["gapsid"] = id for GAPS
-            _data["tracking"]["notes"] = bool (true for notes tracking)
+            //_data["tracking"]["notes"] = bool (true for notes tracking)
+            _data["tracking"]["notes"][telegramid] = true # tracking all branch
+            _data["tracking"]["notes"][telegramid] = [ANA, ASD1] # tracking only ANA and ASD1
         :vartype _data: User
     """
 
@@ -71,32 +73,49 @@ class Gaps:
             self._user._data["gaps"] = {}
         self._data = self._user._data["gaps"]
 
-    def tracking(self, type="notes") -> bool:
+    def tracking(self, type="notes", user_id = None):
         """
             Indicate if tracking is enable
             
+            :param user_id: telegram id for send message
+            :type user_id: int
             :param type: Type of tracking (notes, ...)
             :type type: str
-            :rtype: bool
+            :rtype: bool | list of branch
         """
+        if user_id is None:
+            user_id = self._user._user_id
         if "tracking" in self._data and type in self._data["tracking"]:
-            return self._data["tracking"][type]
+            return self._data["tracking"][type][user_id]
         else:
             return False
+    def tracking_get_telegram_id(self, type="notes"):
+        """
+            Get telegram id list for tracking
 
-    def set_tracking(self, type, value) -> None:
+            :param type: Type of tracking (notes, ...)
+            :type type: str
+            :rtype: list of int
+        """
+        return self._data["tracking"][type].keys()
+
+    def set_tracking(self, type, branch_list, user_id = None) -> None:
         """
             Set tracking mode for type
 
             :param type: Type of tracking (notes, ...)
             :type type: str
-            :param value: True for enable tracking
-            :type value: bool
+            :param branch_list: True for enable tracking all branch, also an array of list branch
+            :type branch_list: bool|string array
+            :param user_id: telegram id for send message
+            :type user_id: int
             :rtype: None
         """
+        if user_id is None:
+            user_id = self._user._user_id
         if "tracking" not in self._data:
             self._data["tracking"] = {}
-        self._data["tracking"][type] = value
+        self._data["tracking"][type][user_id] = branch_list
         self._user.save()
 
     def is_registred(self):
