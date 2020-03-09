@@ -136,7 +136,7 @@ class Gaps:
         """
         return "gapsid" in self._data and "password" in self._data
 
-    def get_timetable_ics(self, year, trimester, id, type, force=False):
+    def get_timetable_ics(self, id, type, year=None, trimester=None, force=False):
         """
             Get ICS file.
             File in cache is used if possible.
@@ -165,10 +165,16 @@ class Gaps:
         if download:
             if not self.is_registred():
                 raise GapsError("You are not registred")
+            params = {'type': type, 'id': id, 'icalendarversion': 2}
+            if year is not None:
+                params['annee'] = year
+            if trimester is not None:
+                params['trimestre'] = trimester
+
             ics = requests.get(
                 URL_TIMETABLE,
                 auth=(self._data['username'], self._data['password']),
-                params={'annee': year, 'trimestre': trimester, 'type': type, 'id': id, 'icalendarversion': 2}
+                params=params
             ).text
             file = open(filename, "w")
             file.write(ics)
@@ -187,7 +193,7 @@ class Gaps:
         """
         if "gapsid" not in self._data:
             raise GapsError("You are not gaps id, please /setgapscredentials")
-        c = Calendar(self.get_timetable_ics(2019, 3, self._data["gapsid"], 2))
+        c = Calendar(self.get_timetable_ics(self._data["gapsid"], 2))
         if text:
             ret = dt.format('*dddd D MMMM YYYY*\n', locale="fr")
             for i in c.timeline.on(dt):
