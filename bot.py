@@ -28,7 +28,7 @@ from heig.init import *
 from heig.user import User
 
 
-def cmdsetgapscredentials(update, context):
+def cmd_set_gaps_credentials(update, context):
     """
         treatment of command /setgappscredentials
 
@@ -51,7 +51,7 @@ def cmdsetgapscredentials(update, context):
     user.send_message("Your message has been deleted for security", chat_id=update.effective_chat.id)
 
 
-def cmdunsetgapscredentials(update, context):
+def cmd_unset_gaps_credentials(update, context):
     """
         treatment of command /unsetgappscredentials
 
@@ -72,7 +72,7 @@ def cmdunsetgapscredentials(update, context):
         user.send_message("credentials deleted", chat_id=update.effective_chat.id)
 
 
-def cmdcleargapsnotes(update, context):
+def cmd_clear_gaps_notes(update, context):
     """
         treatment of command /cleargapsnotes
 
@@ -89,7 +89,7 @@ def cmdcleargapsnotes(update, context):
     user.save()
     user.send_message("Notes cache cleared", chat_id=update.effective_chat.id)
     
-def cmd_showdata(update, context):
+def cmd_show_data(update, context):
     """
         treatment of command /showdata
 
@@ -227,7 +227,7 @@ def cmd_calendar(update, context) -> None:
     u.send_message(text, chat_id=update.effective_chat.id, parse_mode="Markdown")
 
 
-def cmdcheckgapsnotes(update, context):
+def cmd_check_gaps_notes(update, context):
     """
         treatment of command /checkgapsnotes
 
@@ -243,7 +243,7 @@ def cmdcheckgapsnotes(update, context):
     user.gaps().check_gaps_notes()
 
 
-def cmdgetgapsnotes(update, context):
+def cmd_get_gaps_notes(update, context):
     """
         treatment of command /getgapsnotes [<year> [<branch> ...]]
 
@@ -271,7 +271,7 @@ def cmdgetgapsnotes(update, context):
         user.gaps().send_notes_all(update.effective_chat.id)
 
 
-def cmdhelp(update, context):
+def cmd_help(update, context):
     """
         treatment of command /help
 
@@ -349,7 +349,7 @@ def cmd(update, context):
 
 ##############
 
-def cmdadminkill(update, context):
+def cmd_admin_kill(update, context):
     """
         treatment of command /adminkill
 
@@ -369,7 +369,7 @@ def cmdadminkill(update, context):
         user.send_message("Sorry, you aren't admin", chat_id=update.effective_chat.id)
 
 
-def cmdadminupdate(update, context):
+def cmd_admin_update(update, context):
     """
         treatment of command /adminkill
 
@@ -386,10 +386,10 @@ def cmdadminupdate(update, context):
     if (user.is_admin()):
         update.message.text = "git pull"
         cmd(update, context)
-        cmdadminkill(update, context)
+        cmd_admin_kill(update, context)
 
 
-def start(update, context):
+def cmd_start(update, context):
     """
         treatment of command /start
 
@@ -409,21 +409,21 @@ get help with /help"""
     user.send_message(text, chat_id=update.effective_chat.id)
 
 
-updater().dispatcher.add_handler(telegram.ext.CommandHandler('start', start))
-updater().dispatcher.add_handler(telegram.ext.CommandHandler('help', cmdhelp))
+updater().dispatcher.add_handler(telegram.ext.CommandHandler('start', cmd_start))
+updater().dispatcher.add_handler(telegram.ext.CommandHandler('help', cmd_help))
 updater().dispatcher.add_handler(telegram.ext.CommandHandler('calendar', cmd_calendar))
-updater().dispatcher.add_handler(telegram.ext.CommandHandler('adminkill', cmdadminkill))
-updater().dispatcher.add_handler(telegram.ext.CommandHandler('adminupdate', cmdadminupdate))
-updater().dispatcher.add_handler(telegram.ext.CommandHandler('setgapscredentials', cmdsetgapscredentials))
-updater().dispatcher.add_handler(telegram.ext.CommandHandler('unsetgapscredentials', cmdunsetgapscredentials))
-updater().dispatcher.add_handler(telegram.ext.CommandHandler('getgapsnotes', cmdgetgapsnotes))
-updater().dispatcher.add_handler(telegram.ext.CommandHandler('cleargapsnotes', cmdcleargapsnotes))
-updater().dispatcher.add_handler(telegram.ext.CommandHandler('checkgapsnotes', cmdcheckgapsnotes))
+updater().dispatcher.add_handler(telegram.ext.CommandHandler('adminkill', cmd_admin_kill))
+updater().dispatcher.add_handler(telegram.ext.CommandHandler('adminupdate', cmd_admin_update))
+updater().dispatcher.add_handler(telegram.ext.CommandHandler('setgapscredentials', cmd_set_gaps_credentials))
+updater().dispatcher.add_handler(telegram.ext.CommandHandler('unsetgapscredentials', cmd_unset_gaps_credentials))
+updater().dispatcher.add_handler(telegram.ext.CommandHandler('getgapsnotes', cmd_get_gaps_notes))
+updater().dispatcher.add_handler(telegram.ext.CommandHandler('cleargapsnotes', cmd_clear_gaps_notes))
+updater().dispatcher.add_handler(telegram.ext.CommandHandler('checkgapsnotes', cmd_check_gaps_notes))
 updater().dispatcher.add_handler(telegram.ext.CommandHandler('version', cmd_version))
 updater().dispatcher.add_handler(telegram.ext.CommandHandler('close', cmd_close))
 updater().dispatcher.add_handler(telegram.ext.CommandHandler('trackinggapsnotes', cmd_tracking_gaps_notes))
 updater().dispatcher.add_handler(telegram.ext.CommandHandler('untrackinggapsnotes', cmd_untracking_gaps_notes))
-updater().dispatcher.add_handler(telegram.ext.CommandHandler('showdata', cmd_showdata))
+updater().dispatcher.add_handler(telegram.ext.CommandHandler('showdata', cmd_show_data))
 
 # Need to be after CommandHandler for non-admin user
 if config()["admin_exec"] == "on":
