@@ -88,7 +88,8 @@ def cmd_clear_gaps_notes(update, context):
     user.gaps()._data["notes"] = {}
     user.save()
     user.send_message("Notes cache cleared", chat_id=update.effective_chat.id)
-    
+
+
 def cmd_show_data(update, context):
     """
         treatment of command /showdata
@@ -113,7 +114,6 @@ def cmd_show_data(update, context):
     user.send_message(text, prefix="```\n", suffix="```", parse_mode="Markdown")
 
 
-
 def cmd_untracking_gaps_notes(update, context) -> None:
     """
         treatment of command /untrackinggapsnotes
@@ -136,6 +136,7 @@ def cmd_untracking_gaps_notes(update, context) -> None:
         text = "Tracking gaps notes is *disable*"
     print("B")
     u.send_message(text, chat_id=update.effective_chat.id, parse_mode="Markdown")
+
 
 def cmd_tracking_gaps_notes(update, context) -> None:
     """
