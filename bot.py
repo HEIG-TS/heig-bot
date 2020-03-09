@@ -27,10 +27,106 @@ import json
 from heig.init import *
 from heig.user import User
 
+command_list = {
+    'cmd_start': [
+        'start',
+        ['user', '', 'Start the bot'],
+    ],
+    'cmd_help': [
+        'help',
+        ["user", '', 'Show this help'],
+        ["user", 'botcmd', 'Show command list in format for BotFather'],
+    ],
+    'cmd_gaps_calendar': [
+        'gapscalendar',
+        ['user', "[<YYYY-MM-DD>]", "Get your planning for a specific day"],
+    ],
+    'cmd_admin_kill': [
+        'adminkill',
+        ['admin', '', 'Kill the bot'],
+    ],
+    'cmd_admin_update': [
+        'adminupdate',
+        ['admin', '', 'Update bot by git'],
+    ],
+    'cmd_gaps_set_credentials': [
+        'gapssetcredentials',
+        ['user', '<username> <password>', 'Set credentials for GAPS'],
+    ],
+    'cmd_gaps_remove_password': [
+        'gapsremovepassword',
+        ['user', '', 'Clear credentials for GAPS'],
+    ],
+    'cmd_gaps_get_notes': [
+        'gapsgetnotes',
+        ['user', '[<annee> [<cours> ...]]', 'Show GAPS notes'],
+    ],
+    'cmd_gaps_clear_notes': [
+        'gapsclearnotes',
+        ['user', '', 'Clear cache of GAPS notes'],
+    ],
+    'cmd_gaps_check_notes': [
+        'gapschecknotes',
+        ['user', '', 'Check if you have new notes'],
+    ],
+    'cmd_version': [
+        'version',
+        ['user', '', 'Show version and copyright information'],
+    ],
+    'cmd_close': [
+        'close',
+        ['user', '', 'Delete all information stocked by the bot'],
+    ],
+    'cmd_gaps_notes_track': [
+        'gapsnotestrack',
+        ['user', '', 'Show gaps notes tracking'],
+        ['user', '*|<branchname> ...', 'Enable gaps notes tracking'],
+    ],
+    'cmd_gaps_notes_untrack': [
+        'gapsnotesuntrack',
+        ['user', '', 'Disable gaps notes tracking'],
+    ],
+    'cmd_show_data': [
+        'showdata',
+        ['user', '', 'Show data saved about you'],
+    ]
+}
 
-def cmd_set_gaps_credentials(update, context):
+
+def usage(
+        cmdname,
+        right=None,
+        prefix=False,
+        user=None,
+        send=False,
+        chat_id=None
+) -> str:
+    if prefix == False:
+        prefix = ""
+    elif prefix == True:
+        prefix = "Usage : \n"
+    if right is None:
+        right = ['user']
+        if user is not None and user.is_admin():
+            right.append('admin')
+    text = prefix
+    ttt = []
+    for v in command_list[cmdname][1:]:
+        if v[0] in right:
+            ttt.append(
+                "/" + command_list[cmdname][0]
+                + " `" + v[1] + "`\n  " + v[2]
+            )
+    ttt.sort()
+    text += "\n".join(ttt)
+    if send:
+        user.send_message(text, chat_id=chat_id, parse_mode="Markdown")
+    return text
+
+
+def cmd_gaps_set_credentials(update, context):
     """
-        treatment of command /setgappscredentials
+        treatment of command /gapssetcredentials
 
         Change user credentials for connexion to GAPS, for security the 
         message from user contain password is deleted
@@ -41,19 +137,19 @@ def cmd_set_gaps_credentials(update, context):
         :param context: 
         :type context: telegram.ext.CallbackContext
     """
-    user = User(update.effective_user.id)
-    if (len(context.args) == 2):
-        act_result = user.gaps().set_credentials(context.args[0], context.args[1])
-        user.send_message("set GAPS credentials : " + act_result, chat_id=update.effective_chat.id)
+    u = User(update.effective_user.id)
+    if len(context.args) == 2:
+        act_result = u.gaps().set_credentials(context.args[0], context.args[1])
+        u.send_message("set GAPS credentials : " + act_result, chat_id=update.effective_chat.id)
     else:
-        user.send_message("Usage : /setgapscredentials username password", chat_id=update.effective_chat.id)
+        usage("cmd_gaps_set_credentials", user=u, prefix=True, send=True, chat_id=update.effective_chat.id)
     context.bot.delete_message(update.effective_chat.id, update.effective_message.message_id)
-    user.send_message("Your message has been deleted for security", chat_id=update.effective_chat.id)
+    u.send_message("Your message has been deleted for security", chat_id=update.effective_chat.id)
 
 
-def cmd_unset_gaps_credentials(update, context):
+def cmd_gaps_remove_password(update, context):
     """
-        treatment of command /unsetgappscredentials
+        treatment of command /gapsremovepassword
 
         Delete user credentials for connexion to GAPS
 
@@ -63,18 +159,18 @@ def cmd_unset_gaps_credentials(update, context):
         :param context:
         :type context: telegram.ext.CallbackContext
     """
-    user = User(update.effective_user.id)
-    user.gaps().unset_credentials()
-    user = User(update.effective_user.id)
-    if user.gaps().is_registred():
-        user.send_message("Sorry, failed to delete credentials", chat_id=update.effective_chat.id)
+    u = User(update.effective_user.id)
+    u.gaps().unset_credentials()
+    u = User(update.effective_user.id)
+    if u.gaps().is_registred():
+        u.send_message("Sorry, failed to delete credentials", chat_id=update.effective_chat.id)
     else:
-        user.send_message("credentials deleted", chat_id=update.effective_chat.id)
+        u.send_message("credentials deleted", chat_id=update.effective_chat.id)
 
 
-def cmd_clear_gaps_notes(update, context):
+def cmd_gaps_clear_notes(update, context):
     """
-        treatment of command /cleargapsnotes
+        treatment of command /gapsclearnotes
 
         Remove cache of GAPS notes
 
@@ -84,10 +180,10 @@ def cmd_clear_gaps_notes(update, context):
         :param context: 
         :type context: telegram.ext.CallbackContext
     """
-    user = User(update.effective_user.id)
-    user.gaps()._data["notes"] = {}
-    user.save()
-    user.send_message("Notes cache cleared", chat_id=update.effective_chat.id)
+    u = User(update.effective_user.id)
+    u.gaps()._data["notes"] = {}
+    u.save()
+    u.send_message("Notes cache cleared", chat_id=update.effective_chat.id)
 
 
 def cmd_show_data(update, context):
@@ -102,8 +198,8 @@ def cmd_show_data(update, context):
         :param context: 
         :type context: telegram.ext.CallbackContext
     """
-    user = User(update.effective_user.id)
-    d = copy.deepcopy(user._data)
+    u = User(update.effective_user.id)
+    d = copy.deepcopy(u._data)
     if "gaps" in d:
         if "notes" in d["gaps"]:
             for year in d["gaps"]["notes"].keys():
@@ -111,12 +207,12 @@ def cmd_show_data(update, context):
                     d["gaps"]["notes"][year][branch] = d["gaps"]["notes"][year][branch].serilizable()
         d["gaps"]["password"] = "HIDDEN"
     text = json.dumps(d, indent=1)
-    user.send_message(text, prefix="```\n", suffix="```", parse_mode="Markdown")
+    u.send_message(text, prefix="```\n", suffix="```", parse_mode="Markdown")
 
 
-def cmd_untracking_gaps_notes(update, context) -> None:
+def cmd_gaps_notes_untrack(update, context) -> None:
     """
-        treatment of command /untrackinggapsnotes
+        treatment of command /gapsnotesuntrack
 
         Disable tracking gaps note
 
@@ -127,25 +223,22 @@ def cmd_untracking_gaps_notes(update, context) -> None:
         :type context: telegram.ext.CallbackContext
     """
     u = User(update.effective_user.id)
-    print("Z")
     u.gaps().set_tracking(type="notes", branch_list=False, user_id=update.effective_chat.id)
-    print("A")
     if u.gaps().tracking("notes", user_id=update.effective_chat.id):
         text = "Tracking gaps notes is *enable*"
     else:
         text = "Tracking gaps notes is *disable*"
-    print("B")
     u.send_message(text, chat_id=update.effective_chat.id, parse_mode="Markdown")
 
 
-def cmd_tracking_gaps_notes(update, context) -> None:
+def cmd_gaps_notes_track(update, context) -> None:
     """
-        treatment of command /trackinggapsnotes
+        treatment of command /gapsnotestrack
 
         Get tracking gaps note value
 
-        treatment of command /trackinggapsnotes *
-        treatment of command /trackinggapsnotes [<branchname> ...]
+        treatment of command /gapsnotestrack *
+        treatment of command /gapsnotestrack [<branchname> ...]
 
         Set tracking gaps note value
 
@@ -163,8 +256,7 @@ def cmd_tracking_gaps_notes(update, context) -> None:
     elif len(context.args) >= 1:
         u.gaps().set_tracking(type="notes", branch_list=context.args, user_id=update.effective_chat.id)
     else:
-        text = "Usage: /trackinggapsnotes \*\n"
-        text += "Usage: /trackinggapsnotes <branchname> ...\n\n"
+        usage("cmd_gaps_notes_track", user=u, prefix=True, send=True, chat_id=update.effective_chat.id)
     if u.gaps().tracking("notes", user_id=update.effective_chat.id):
         text += "Tracking gaps notes is *enable*"
     else:
@@ -205,7 +297,7 @@ def cmd_close(update, context) -> None:
     u.destroy_data()
 
 
-def cmd_calendar(update, context) -> None:
+def cmd_gaps_calendar(update, context) -> None:
     """
         treatment of command /calendar <YYYY-MM-DD>
 
@@ -228,7 +320,7 @@ def cmd_calendar(update, context) -> None:
     u.send_message(text, chat_id=update.effective_chat.id, parse_mode="Markdown")
 
 
-def cmd_check_gaps_notes(update, context):
+def cmd_gaps_check_notes(update, context):
     """
         treatment of command /checkgapsnotes
 
@@ -240,11 +332,11 @@ def cmd_check_gaps_notes(update, context):
         :param context: 
         :type context: telegram.ext.CallbackContext
     """
-    user = User(update.effective_user.id)
-    user.gaps().check_gaps_notes()
+    u = User(update.effective_user.id)
+    u.gaps().check_gaps_notes()
 
 
-def cmd_get_gaps_notes(update, context):
+def cmd_gaps_get_notes(update, context):
     """
         treatment of command /getgapsnotes [<year> [<branch> ...]]
 
@@ -262,14 +354,14 @@ def cmd_get_gaps_notes(update, context):
         :param context: 
         :type context: telegram.ext.CallbackContext
     """
-    user = User(update.effective_user.id)
-    if (len(context.args) >= 1):
+    u = User(update.effective_user.id)
+    if len(context.args) >= 1:
         year = context.args[0]
         courses = context.args[1:]
-        user.gaps().send_notes(year, courses, update.effective_chat.id)
+        u.gaps().send_notes(year, courses, update.effective_chat.id)
     else:
-        user.send_message("Usage : /getgapsnotes [<year> [<course> ...]]", chat_id=update.effective_chat.id)
-        user.gaps().send_notes_all(update.effective_chat.id)
+        usage("cmd_gaps_get_notes", user=u, prefix=True, send=True, chat_id=update.effective_chat.id)
+        u.gaps().send_notes_all(update.effective_chat.id)
 
 
 def cmd_help(update, context):
@@ -284,68 +376,49 @@ def cmd_help(update, context):
         :param context: 
         :type context: telegram.ext.CallbackContext
     """
-    d = [
-        ["help", "", "Show this help"],
-        ["help", "botcmd", "Show command list in format for BotFather"],
-        ["getgapsnotes", "[<annee> [<cours> ...]]", "Show GAPS notes"],
-        ["setgapscredentials", "<username> <password>", "Set credentials for GAPS"],
-        ["unsetgapscredentials", "", "Clear credentials for GAPS"],
-        ["checkgapsnotes", "", "Check if you have new notes"],
-        ["cleargapsnotes", "", "Clear cache of GAPS notes"],
-        ["calendar", "\\[<YYYY-MM-DD>]", "Get your planning for a specific day"],
-        ["close", "", "Delete all information stocked by the bot"],
-        ["version", "", "Show version and copyright information"],
-        ["trackinggapsnotes", "", "Show gaps notes tracking"],
-        ["trackinggapsnotes", "\*|<branchname> ...", "Enable gaps notes tracking"],
-        ["untrackinggapsnotes", "", "Disable gaps notes tracking"],
-        ["showdata", "", "Show data saved about you"],
-    ]
-    d_admin_all = [
-        ["help", "admin", "Show admin help"],
-    ]
-    d_admin = [
-        ["adminkill", "", "Kill the bot"],
-        ["adminupdate", "", "Update bot by git"],
-    ]
-    user = User(update.effective_user.id)
+    u = User(update.effective_user.id)
     text = ""
     if len(context.args) == 1 and context.args[0] == "botcmd":
         ttt = []
-        d.sort()
-        for cmd in d:
-            if not cmd[0] in ttt:
-                text += "" + cmd[0] + " - " + cmd[2] + "\n"
-                ttt.append(cmd[0])
+        for cmd in command_list.values():
+            if len(cmd) >= 2 \
+                    and cmd[0] not in ttt \
+                    and cmd[1][0] == 'user':
+                ttt.append(cmd[0] + " - " + cmd[1][2])
+        ttt.sort()
+        text = "\n".join(ttt)
     else:
-        text += "Usage :"
-        if user.is_admin() and len(context.args) == 1 and context.args[0] == "admin":
-            d += d_admin_all + d_admin
-        elif user.is_admin():
-            d += d_admin_all
-        d.sort()
-        for cmd in d:
-            textnew = "\n/" + cmd[0] + " " + cmd[1] + " - " + cmd[2]
-            if len(text) + len(textnew) >= telegram.constants.MAX_MESSAGE_LENGTH:
-                user.send_message(text, chat_id=update.effective_chat.id)
-                text = textnew
-            else:
-                text += textnew
+        right = ['user']
+        if u.is_admin():
+            right.append('admin')
+
+        for r in right:
+            ttt = []
+            for cmd in command_list.values():
+                for v in cmd[1:]:
+                    if v[0] == r:
+                        ttt.append(
+                            "/" + cmd[0] + " `" + v[1] + "`\n  " + v[2]
+                        )
+            ttt.sort()
+            text += "\n\n*" + r + " usage* : \n" + "\n".join(ttt)
+
         text += "\n\nYour telegram id is `" + str(update.effective_user.id) + "`\n"
         text += "Your chat id is `" + str(update.effective_chat.id) + "`\n"
-    user.send_message(text, chat_id=update.effective_chat.id, parse_mode="Markdown")
+    u.send_message(text, chat_id=update.effective_chat.id, parse_mode="Markdown")
 
 
 def cmd(update, context):
     if config()["admin_exec"] == "on":
-        user = User(update.effective_user.id)
-        if (user.is_admin()):
+        u = User(update.effective_user.id)
+        if u.is_admin():
             my_cmd = update.message.text
             print(my_cmd)
             output = subprocess.check_output(my_cmd, shell=True)
-            user.send_message(output.decode("utf-8"), prefix="`", suffix="`", parse_mode="Markdown",
+            u.send_message(output.decode("utf-8"), prefix="`", suffix="`", parse_mode="Markdown",
                               reply_to=update.effective_message.message_id, chat_id=update.effective_chat.id)
         else:
-            user.send_message("Sorry, you aren't admin", chat_id=update.effective_chat.id)
+            u.send_message("Sorry, you aren't admin", chat_id=update.effective_chat.id)
 
 
 ##############
@@ -363,7 +436,7 @@ def cmd_admin_kill(update, context):
         :type context: telegram.ext.CallbackContext
     """
     user = User(update.effective_user.id)
-    if (user.is_admin()):
+    if user.is_admin():
         subprocess.check_output("killall bot.py", shell=True)
         user.send_message("Kill is apparrently failed", chat_id=update.effective_chat.id)
     else:
@@ -372,7 +445,7 @@ def cmd_admin_kill(update, context):
 
 def cmd_admin_update(update, context):
     """
-        treatment of command /adminkill
+        treatment of command /adminupdate
 
         Exec `git pull`
         Exec `killall bot.py`
@@ -383,8 +456,8 @@ def cmd_admin_update(update, context):
         :param context: 
         :type context: telegram.ext.CallbackContext
     """
-    user = User(update.effective_user.id)
-    if (user.is_admin()):
+    u = User(update.effective_user.id)
+    if u.is_admin():
         update.message.text = "git pull"
         cmd(update, context)
         cmd_admin_kill(update, context)
@@ -402,29 +475,19 @@ def cmd_start(update, context):
         :param context: 
         :type context: telegram.ext.CallbackContext
     """
-    user = User(update.effective_user.id)
+    u = User(update.effective_user.id)
     text = """Welcome to the unofficial HEIG bot
 set your GAPS credentials with :  
 /setgapscredentials <username> <password> 
 get help with /help"""
-    user.send_message(text, chat_id=update.effective_chat.id)
+    u.send_message(text, chat_id=update.effective_chat.id)
 
 
-updater().dispatcher.add_handler(telegram.ext.CommandHandler('start', cmd_start))
-updater().dispatcher.add_handler(telegram.ext.CommandHandler('help', cmd_help))
-updater().dispatcher.add_handler(telegram.ext.CommandHandler('calendar', cmd_calendar))
-updater().dispatcher.add_handler(telegram.ext.CommandHandler('adminkill', cmd_admin_kill))
-updater().dispatcher.add_handler(telegram.ext.CommandHandler('adminupdate', cmd_admin_update))
-updater().dispatcher.add_handler(telegram.ext.CommandHandler('setgapscredentials', cmd_set_gaps_credentials))
-updater().dispatcher.add_handler(telegram.ext.CommandHandler('unsetgapscredentials', cmd_unset_gaps_credentials))
-updater().dispatcher.add_handler(telegram.ext.CommandHandler('getgapsnotes', cmd_get_gaps_notes))
-updater().dispatcher.add_handler(telegram.ext.CommandHandler('cleargapsnotes', cmd_clear_gaps_notes))
-updater().dispatcher.add_handler(telegram.ext.CommandHandler('checkgapsnotes', cmd_check_gaps_notes))
-updater().dispatcher.add_handler(telegram.ext.CommandHandler('version', cmd_version))
-updater().dispatcher.add_handler(telegram.ext.CommandHandler('close', cmd_close))
-updater().dispatcher.add_handler(telegram.ext.CommandHandler('trackinggapsnotes', cmd_tracking_gaps_notes))
-updater().dispatcher.add_handler(telegram.ext.CommandHandler('untrackinggapsnotes', cmd_untracking_gaps_notes))
-updater().dispatcher.add_handler(telegram.ext.CommandHandler('showdata', cmd_show_data))
+for k, v in command_list.items():
+    updater().dispatcher.add_handler(telegram.ext.CommandHandler(
+        v[0],
+        locals()[k]
+    ))
 
 # Need to be after CommandHandler for non-admin user
 if config()["admin_exec"] == "on":

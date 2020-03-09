@@ -6,7 +6,7 @@ ChangeLog
 
 Breaking changes:
 
-- *add item here*
+- many command are renamed for standardize
 
 New features:
 
