@@ -1,0 +1,7 @@
+version: '3.7'
+
+services:
+  bot:
+    build: .
+    volumes:
+    - .:/usr/src/bot:cached
