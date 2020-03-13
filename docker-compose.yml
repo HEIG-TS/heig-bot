@@ -3,5 +3,7 @@ version: '3.7'
 services:
   bot:
     build: .
+    image: heig-bot
+    container_name: heig-bot
     volumes:
     - .:/usr/src/bot:cached
