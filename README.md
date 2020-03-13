@@ -71,10 +71,21 @@ You can see your telegram userid when you send `/help` to the `heig-bot`.
 The bot can start without admin, but you need remove "" from `admin` in group `group`
 and `log` in `group` in `config.json`, for empty array.
 
-### Start bot
+### Start bot manually
 
 ```shell script
 cd /opt/heig-bot && ./bot.py
+```
+
+### Start bot with Docker
+```shell
+docker build -t heig-bot .
+docker run --rm -ti heig-bot
+```
+
+### Start bot with docker-compose
+```shell
+docker-compose up
 ```
 
 ### Auto update
