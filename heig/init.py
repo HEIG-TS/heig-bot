@@ -49,7 +49,7 @@ def onerror(update, context):
     except GapsError as error:
         str_error = "Error : " + str(error)
     except:
-        str_error = "Unknow error! See the console for more details."
+        str_error = "Unknown error! See the console for more details."
     context.bot.send_message(chat_id=update.effective_chat.id, text=str_error)
     str_debug = "[" + str(update.effective_chat.id) + "] " + str(context.error)
     if config()["debug"] >= 3:

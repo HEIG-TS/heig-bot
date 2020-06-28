@@ -438,7 +438,7 @@ def cmd_admin_kill(update, context):
     user = User(update.effective_user.id)
     if user.is_admin():
         subprocess.check_output("killall bot.py", shell=True)
-        user.send_message("Kill is apparrently failed", chat_id=update.effective_chat.id)
+        user.send_message("Kill is apparently failed", chat_id=update.effective_chat.id)
     else:
         user.send_message("Sorry, you aren't admin", chat_id=update.effective_chat.id)
 

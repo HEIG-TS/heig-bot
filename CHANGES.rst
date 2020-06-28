@@ -69,7 +69,7 @@ New features:
 - Move class to package heig
 - Update documentation
 - Add telegram userid and chatid to help message
-- Clear unsued code on gaps.py
+- Clear unused code on gaps.py
 
 Bug fixes:
 
