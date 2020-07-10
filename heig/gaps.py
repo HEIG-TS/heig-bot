@@ -252,7 +252,7 @@ class Gaps:
             text = json.loads(text[2:])
         except:
             raise GapsError(
-                "Parsing of gaps notes page ERROR, are you changed your GAPS password ? (/setgapscredentials)")
+                "Parsing of gaps notes page ERROR, have you changed your GAPS password ? (/setgapscredentials)")
         soup = BeautifulSoup(text, 'html.parser')
         rows = soup.find_all('tr')
 
