@@ -216,12 +216,14 @@ class Gaps:
             :type password: str
         """
         text = requests.get(URL_ATTENDANCE, auth=(username, password)).text
-        if text.find('idStudent = ') == -1:
+        if text.find('DEFAULT_STUDENT_ID = ') == -1:
             return "Fail, check your login/password (login is HEIG login, not HES-SO login)"
         else:
             self._data["username"] = username
             self._data["password"] = password
-            self._data["gapsid"] = text[text.find('idStudent = ') + 12:text.find('// default') - 2]
+            text = text[text.find('DEFAULT_STUDENT_ID = ') + 21:]
+            text = text[:text.find(';')]
+            self._data["gapsid"] = text
             self._user.save()
             return "Success (GAPS ID: " + str(self._data["gapsid"]) + ")"
 

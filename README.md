@@ -25,9 +25,11 @@ pip3 install python-telegram-bot beautifulsoup4 ics
 apt install python3-sphinx-rtd-theme python3-sphinx
 ```
 
+and python3-arrow
+
 ### On Debian bullseye/sid
 ```shell script
-apt install python3-python-telegram-bot python3-bs4
+apt install python3-python-telegram-bot python3-bs4 python3-arrow
 pip3 install ics
 
 # if you need generate documentation
@@ -44,6 +46,8 @@ sudo pip install ics
 sudo pacman -S python-sphinx
 sudo pip install sphinx_rtd_theme
 ```
+
+and python3-arrow
 
 ## Installation
 
