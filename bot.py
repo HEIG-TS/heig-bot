@@ -478,8 +478,16 @@ def cmd_start(update, context):
     u = User(update.effective_user.id)
     text = """Welcome to the unofficial HEIG bot
 set your GAPS credentials with :  
-/setgapscredentials <username> <password> 
-get help with /help"""
+/gapssetcredentials <username> <password> 
+get help with /help
+
+DISCLAIMER
+
+Your password is stored in clear. This is necessary to connect to GAPS website.
+Using someone else's instance is not safe. Install your own instance 
+(see https://github.com/HEIG-TS/heig-bot/blob/master/README.md)
+If the computer running "heig-bot" was compromised, passwords would also be compromised
+"""
     u.send_message(text, chat_id=update.effective_chat.id)
 
 

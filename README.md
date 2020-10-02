@@ -9,6 +9,11 @@ This can also check regularly if a user have new gradle and send message if.
  - **Demo:** [https://t.me/uzka_heig_prod_bot](https://t.me/uzka_heig_prod_bot)
  - **News:** [https://t.me/heig_bot_news](https://t.me/heig_bot_news)
 
+## DISCLAIMER
+
+Your password is stored in clear. This is necessary to connect to GAPS website.
+Using someone else's instance is not safe. Install your own instance 
+If the computer running "heig-bot" was compromised, passwords would also be compromised
 
 ## Depends
  - python-telegram-bot
