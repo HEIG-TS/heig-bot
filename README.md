@@ -19,6 +19,7 @@ If the computer running "heig-bot" was compromised, passwords would also be comp
  - python-telegram-bot
  - beautifulsoup4
  - ics
+ - requests
  - dask-sphinx-theme (for generate documentation) 
  - sphinx (for generate documentation)
 
