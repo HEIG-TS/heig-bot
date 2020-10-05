@@ -31,6 +31,7 @@ import requests
 from bs4 import BeautifulSoup
 from ics import Calendar
 
+
 URL_BASE = "https://gaps.heig-vd.ch/"
 URL_CONSULTATION_NOTES = URL_BASE + "/consultation/controlescontinus/consultation.php"
 URL_ATTENDANCE = URL_BASE + "/consultation/etudiant/"
@@ -157,6 +158,7 @@ class Gaps:
             :type force: bool
         """
         from heig.init import config
+        from heig.init import BOT_VERSION
         dirname = config()["database_directory"] + DIR_DB_TIMETABLE + "/" + str(year) + "/" + str(
             trimester) + "/" + str(type)
         filename = dirname + "/" + str(id) + ".ics"
@@ -173,6 +175,7 @@ class Gaps:
 
             ics = requests.get(
                 URL_TIMETABLE,
+                headers={"User-Agent": "HEIG-Bot ("+BOT_VERSION+")"},
                 auth=(self._data['username'], self._data['password']),
                 params=params
             ).text
@@ -215,7 +218,12 @@ class Gaps:
             :param password: GAPS password
             :type password: str
         """
-        text = requests.get(URL_ATTENDANCE, auth=(username, password)).text
+        from heig.init import BOT_VERSION
+        text = requests.get(
+                URL_ATTENDANCE, 
+                headers={"User-Agent": "HEIG-Bot ("+BOT_VERSION+")"},
+                auth=(username, password)
+                ).text
         if text.find('DEFAULT_STUDENT_ID = ') == -1:
             return "Fail, check your login/password (login is HEIG login, not HES-SO login)"
         else:
@@ -238,12 +246,16 @@ class Gaps:
             :param year: Year to get (for 2020-2021 is 2020)
             :type year: 
         """
+        from heig.init import BOT_VERSION
         if not self.is_registred():
             raise GapsError("You are not registred")
         text = requests.post(
             URL_CONSULTATION_NOTES,
             auth=(self._data['username'], self._data['password']),
-            headers={'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8'},
+            headers={
+                'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8',
+                "User-Agent": "HEIG-Bot ("+BOT_VERSION+")"
+                },
             data={
                 'rs': 'getStudentCCs',
                 'rsargs': '[' + self._data["gapsid"] + ',' + year + ',null]',
