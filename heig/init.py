@@ -20,6 +20,9 @@ import json
 import logging
 import sys
 
+import warnings
+warnings.filterwarnings("ignore", message='python-telegram-bot is using upstream urllib3. This is allowed but not '
+                      'supported by python-telegram-bot maintainers.')
 import telegram.ext
 
 from heig.gaps import GapsError
