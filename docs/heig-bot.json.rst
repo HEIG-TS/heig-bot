@@ -1,7 +1,10 @@
-config.json
-===========
+heig-bot.json
+=============
 
-`config.json.sample` is a template for `config.json`
+`heig-bot.json.sample` is a template for `heig-bot.json`.
+If file `~/.heig-bot.json` exists then the bot load it.
+Else if file `/etc/heig-bot.json` exists then the bot load it.
+Else the bot try to load `heig-bot.json` in the current directory.
 
 
 - **database_directory**:

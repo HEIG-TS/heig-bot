@@ -19,6 +19,7 @@
 import json
 import logging
 import sys
+import os.path
 
 import warnings
 warnings.filterwarnings("ignore", message='python-telegram-bot is using upstream urllib3. This is allowed but not '
@@ -74,7 +75,12 @@ sys.setrecursionlimit(10000)
 # else:
 def config():
     if not hasattr(config, "data"):
-        config.data = json.load(open("config.json", 'r'))
+        if path.exists("~/.heig-bot.json"):
+            config.data = json.load(open("~/.heig-bot.json", 'r'))
+        elif path.exists("/etc/heig-bot.json"):
+            config.data = json.load(open("/etc/heig-bot.json", 'r'))
+        else:
+            config.data = json.load(open("heig-bot.json", 'r'))
     return config.data
 
 
@@ -94,4 +100,4 @@ def saveconfig(c):
     Save bot config c in config.json
     :param c: array to save
     """
-    json.dump(c, open("config.json", 'w'), indent=2)
+    json.dump(c, open("~/.heig-bot.json", 'w'), indent=2)

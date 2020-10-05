@@ -60,26 +60,26 @@ and python3-arrow
 ```shell script
 cd /opt/
 git clone https://github.com/g-roch/heig-bot.git -b stable
-cp heig-bot/config.json.sample heig-bot/config.json
+cp heig-bot/heig-bot.json.sample heig-bot/heig-bot.json
 mkdir -p /var/heig-bot/ # set right for script can write
 ```
 
 ### Create bot
 
 You need create a telegram bot with BotFather, and copy
-the bot key in `config.json`. (value of `bot_token`)
+the bot key in `heig-bot.json`. (value of `bot_token`)
 
 ### Admin/Logs configuration 
 
 heig-bot can have admins, you can copy telegram userid (it's a number)
-to `config.json` in `admin` in group `group`.
+to `heig-bot.json` in `admin` in group `group`.
 
 heig-bot can send a message when he start, you can copy telegram userid 
-(it's a number) to `config.json` in `log` in group `group`.
+(it's a number) to `heig-bot.json` in `log` in group `group`.
 
 You can see your telegram userid when you send `/help` to the `heig-bot`.
 The bot can start without admin, but you need remove "" from `admin` in group `group`
-and `log` in `group` in `config.json`, for empty array.
+and `log` in `group` in `heig-bot.json`, for empty array.
 
 ### Start bot manually
 
