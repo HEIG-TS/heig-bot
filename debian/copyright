@@ -11,7 +11,9 @@ License: GPL-3+
 # the following clauses, or change it to suit. Delete these two lines
 Files: debian/*
 Copyright: 2020 Gabriel Roch <gabriel@roch.website>
-License: GPL-2+
+License: GPL-3+
+
+License: GPL-3+
  This package is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation; either version 2 of the License, or

@@ -1,0 +1,4 @@
+heig-bot /usr/bin
+heig-bot-cron /usr/bin
+heig-bot.json /etc
+

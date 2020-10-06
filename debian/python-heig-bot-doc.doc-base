@@ -1,0 +1,10 @@
+Document: heig-bot
+Title: Debian heig-bot Manual
+Author: Gabriel Roch <gabriel.roch@heig-vd.ch>
+Abstract: This manual describes the heig-bot
+ library
+Section: Network/Communication
+
+Format: HTML
+Index: /usr/share/doc/python-heig-bot-doc/html/index.html
+Files: /usr/share/doc/python-heig-bot-doc/html/*.html

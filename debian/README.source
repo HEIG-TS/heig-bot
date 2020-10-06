@@ -1,0 +1,9 @@
+heig-bot for Debian
+------------------
+
+This package is in the same github repository of upstream.
+The debian package is on debian branch, Please PR on this branch for Debian
+update
+
+ -- Gabriel Roch <gabriel@roch.website>  Mon, 05 Oct 2020 16:04:14 +0200
+

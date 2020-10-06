@@ -1,0 +1,8 @@
+heig-bot for Debian
+------------------
+
+This package install the heig-bot.json.sample on /etc/heig-bot.json. This file need 
+modification by admin before start bot, but heig-bot don't detect no diff in heig-bot.json 
+and heig-bot.json.sample.
+
+ -- Gabriel Roch <gabriel@roch.website>  Mon, 05 Oct 2020 16:04:14 +0200

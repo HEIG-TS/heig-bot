@@ -1,5 +1,5 @@
 Source: heig-bot
-Section: net
+Section: python
 Priority: optional
 Maintainer: Gabriel Roch <gabriel@roch.website>
 Build-Depends: 
@@ -20,9 +20,14 @@ Rules-Requires-Root: no
 
 Package: python3-heig-bot
 Architecture: all
-Depends: ${python3:Depends}, ${misc:Depends}
-Suggests: python-heig-bot-doc
-Description: a telegram bot for access to gaps website of HEIG-VD (Python 3)
+Depends: 
+ ${python3:Depends},
+ ${misc:Depends},
+ python3-python-telegram-bot,
+ python3-bs4,
+ python3-arrow
+Suggests: heig-bot-doc
+Description: telegram bot for access to gaps website of HEIG-VD (Python 3)
  a telegram bot for access to gaps website of HEIG-VD
  .
  This package installs the bot for Python 3.
@@ -31,7 +36,7 @@ Package: python-heig-bot-doc
 Architecture: all
 Section: doc
 Depends: ${sphinxdoc:Depends}, ${misc:Depends}
-Description: a telegram bot for access to gaps website of HEIG-VD (common documentation)
+Description: telegram bot for access to gaps website of HEIG-VD (common documentation)
  a telegram bot for access to gaps website of HEIG-VD
  .
  This is the common documentation package.
