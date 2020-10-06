@@ -19,7 +19,7 @@
 import json
 import logging
 import sys
-import os.path
+from os import path
 
 import warnings
 warnings.filterwarnings("ignore", message='python-telegram-bot is using upstream urllib3. This is allowed but not '

@@ -148,7 +148,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'heig-bot', 'HEIG-bot Documentation',
+    (master_doc, 'heig-bot-lib', 'HEIG-bot Documentation',
      [author], 1)
 ]
 
